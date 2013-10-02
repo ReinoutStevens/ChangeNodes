@@ -1,5 +1,8 @@
 package changenodes.operations;
 
-public class Operation implements IOperation {
+import org.eclipse.jdt.core.dom.ASTNode;
 
+public abstract class Operation implements IOperation {
+
+	abstract public ASTNode apply();
 }

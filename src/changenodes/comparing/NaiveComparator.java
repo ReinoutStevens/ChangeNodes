@@ -6,8 +6,12 @@ import java.util.Iterator;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
-public class NaiveComparator {
-	PropertyDecider decider = new PropertyDecider();
+public class NaiveComparator implements INodeComparator {
+	PropertyDecider decider;
+	
+	public NaiveComparator(){
+		this.decider = PropertyDecider.getInstance();
+	}
 	
 	@SuppressWarnings("rawtypes")
 	public boolean compareKey(ASTNode left, ASTNode right){
@@ -34,18 +38,7 @@ public class NaiveComparator {
 			return false;
 		}
 		for(StructuralPropertyDescriptor prop : decider.getValues(left)){
-			if(prop.isChildProperty()) {
-				ASTNode leftProp = (ASTNode) left.getStructuralProperty(prop);
-				ASTNode rightProp = (ASTNode) right.getStructuralProperty(prop);
-				if(!this.compare(leftProp, rightProp))
-					return false;
-			}
-			else if(prop.isChildListProperty()) {
-				Collection<ASTNode> leftProps = (Collection<ASTNode>) left.getStructuralProperty(prop);
-				Collection<ASTNode> rightProps = (Collection<ASTNode>) right.getStructuralProperty(prop);
-				if(!this.compare(leftProps, rightProps))
-					return false;
-			} else if(!this.compare(left.getStructuralProperty(prop), right.getStructuralProperty(prop))){
+			if(!this.compareProperty(left, right, prop)){
 				return false;
 			}
 		}
@@ -69,13 +62,6 @@ public class NaiveComparator {
 		if(left == null || right == null){
 			return left == right;
 		}
-		if (right instanceof ASTNode) {
-			ASTNode rightNode = (ASTNode) right;
-			if (left instanceof ASTNode) {
-				ASTNode leftNode = (ASTNode) left;
-				return this.compare(leftNode, rightNode);
-			}
-		}
 		return left.equals(right);
 	}
 	
@@ -90,18 +76,7 @@ public class NaiveComparator {
 		}
 		for (Iterator iterator = left.structuralPropertiesForType().iterator(); iterator.hasNext();) {
 			StructuralPropertyDescriptor prop = (StructuralPropertyDescriptor) iterator.next();
-			if(prop.isChildProperty()) {
-				ASTNode leftProp = (ASTNode) left.getStructuralProperty(prop);
-				ASTNode rightProp = (ASTNode) right.getStructuralProperty(prop);
-				if(!this.compare(leftProp, rightProp))
-					return false;
-			}
-			else if(prop.isChildListProperty()) {
-				Collection<ASTNode> leftProps = (Collection<ASTNode>) left.getStructuralProperty(prop);
-				Collection<ASTNode> rightProps = (Collection<ASTNode>) right.getStructuralProperty(prop);
-				if(!this.compare(leftProps, rightProps))
-					return false;
-			} else if(!this.compare(left.getStructuralProperty(prop), right.getStructuralProperty(prop))){
+			if(!this.compareProperty(left, right, prop)){
 				return false;
 			}
 		}
@@ -121,4 +96,25 @@ public class NaiveComparator {
 		}
 		return true;
 	}
+
+	@Override
+	public boolean compareProperty(ASTNode left, ASTNode right,
+			StructuralPropertyDescriptor property) {
+		Object leftObject = left.getStructuralProperty(property);
+		Object rightObject = right.getStructuralProperty(property);
+		if(property.isSimpleProperty()){
+			return leftObject.equals(rightObject);
+		} else if(property.isChildProperty()){
+			ASTNode leftNode = (ASTNode) leftObject;
+			ASTNode rightNode = (ASTNode) rightObject;
+			return this.compare(leftNode, rightNode);
+		} else if(property.isChildListProperty()){
+			Collection<ASTNode> leftNodes = (Collection<ASTNode>) leftObject;
+			Collection<ASTNode> rightNodes = (Collection<ASTNode>) rightObject;
+			return this.compare(leftNodes, rightNodes);
+		}
+		return false;
+	}
+	
+	
 }
