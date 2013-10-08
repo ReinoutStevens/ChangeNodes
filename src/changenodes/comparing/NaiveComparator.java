@@ -21,6 +21,9 @@ public class NaiveComparator implements INodeComparator {
 		StructuralPropertyDescriptor leftProp, rightProp;
 		leftProp = findIdentifierProperty(left);
 		rightProp = findIdentifierProperty(right);
+		if(leftProp == null && rightProp == null){
+			return true;
+		}
 		if(leftProp == null || rightProp == null){
 			return false;
 		}

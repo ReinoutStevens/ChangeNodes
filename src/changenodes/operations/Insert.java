@@ -14,8 +14,10 @@ public class Insert extends Operation {
 	int index;
 	StructuralPropertyDescriptor property;
 	
-	public Insert(ASTNode leftNode, ASTNode rightParent, ASTNode rightNode, StructuralPropertyDescriptor property, int index){
+	public Insert(ASTNode leftParent, ASTNode rightParent, ASTNode rightNode, StructuralPropertyDescriptor property, int index){
+		this.leftParent = leftParent;
 		this.rightParent = rightParent;
+		this.rightNode = rightNode;
 		this.property = property;
 		this.index = index;
 	}
@@ -40,7 +42,7 @@ public class Insert extends Operation {
 	
 	
 	public ASTNode apply(){
-		ASTNode copy = ASTNode.copySubtree(AST.newAST(AST.JLS4), rightNode);
+		ASTNode copy = ASTNode.copySubtree(leftParent.getAST(), rightNode);
 		if(property.isChildListProperty()){
 			List<ASTNode> nodes = (List<ASTNode>) leftParent.getStructuralProperty(property);
 			nodes.add(index, copy);

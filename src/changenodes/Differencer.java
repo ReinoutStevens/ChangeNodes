@@ -16,8 +16,10 @@ import changenodes.comparing.DepthFirstNodeIterator;
 import changenodes.comparing.INodeComparator;
 import changenodes.comparing.NaiveComparator;
 import changenodes.comparing.PropertyDecider;
+import changenodes.matching.IMatcher;
 import changenodes.matching.MatchingException;
 import changenodes.matching.NaiveMatcher;
+import changenodes.matching.SubtreeMatcher;
 import changenodes.operations.*;
 
 public class Differencer implements IDifferencer {
@@ -35,7 +37,7 @@ public class Differencer implements IDifferencer {
 	private Map<ASTNode,ASTNode> rightMatchingPrime;
 	private List<ASTNode> outOfOrder;
 	
-	private NaiveMatcher matcher;
+	private IMatcher matcher;
 	private INodeComparator comparator;
 	private PropertyDecider decider;
 	
@@ -45,8 +47,9 @@ public class Differencer implements IDifferencer {
 		this.left = ASTNode.copySubtree(ast, left);
 		this.right = right;
 		this.comparator = new NaiveComparator();
-		this.matcher = new NaiveMatcher(comparator);
+		this.matcher = new SubtreeMatcher();
 		this.decider = PropertyDecider.getInstance();
+		this.outOfOrder = new LinkedList<ASTNode>();
 	}
 	
 	
@@ -54,10 +57,12 @@ public class Differencer implements IDifferencer {
 	public void difference() throws MatchingException {
 		//E is an empty list of operations
 		operations = new LinkedList<IOperation>();
+		outOfOrder = new LinkedList<ASTNode>();
 		//initialize M
-		partialMatching();
 		leftMatchingPrime = new HashMap<ASTNode, ASTNode>();
 		rightMatchingPrime = new HashMap<ASTNode, ASTNode>();
+		matcher = new SubtreeMatcher();
+		partialMatching();
 		//M' <- M
 		//For some reason ChangeDistiller does a regular = here
 		//afaik this should be wrong
