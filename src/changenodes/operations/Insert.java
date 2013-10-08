@@ -6,7 +6,7 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
-public class Insert extends Operation {
+public class Insert implements IOperation {
 
 	ASTNode leftParent;
 	ASTNode rightParent;
@@ -50,6 +50,10 @@ public class Insert extends Operation {
 			leftParent.setStructuralProperty(property, copy);
 		}
 		return copy;
+	}
+	
+	public String toString(){
+		return "Insert " + rightNode.toString();
 	}
 	
 }

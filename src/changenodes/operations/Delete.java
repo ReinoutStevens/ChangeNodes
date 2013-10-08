@@ -5,7 +5,7 @@ import java.util.List;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
-public class Delete extends Operation {
+public class Delete implements IOperation {
 
 	ASTNode leftNode;
 	
@@ -27,5 +27,9 @@ public class Delete extends Operation {
 			parent.setStructuralProperty(prop, null);
 		}
 		return leftNode;
+	}
+	
+	public String toString(){
+		return "Delete: " + leftNode.toString();
 	}
 }

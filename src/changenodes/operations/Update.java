@@ -4,24 +4,26 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
-public class Update extends Operation {
+public class Update implements IOperation {
 
-	private ASTNode left, right;
+	private ASTNode rightParent, leftParent;
 	private StructuralPropertyDescriptor property;
 	
-	
-	public Update(ASTNode left, ASTNode right, StructuralPropertyDescriptor property){
-		this.left = left;
-		this.right = right;
+	/*
+	 * Update the property of leftParent to the value of that property of the rightParent
+	 */
+	public Update(ASTNode leftParent, ASTNode rightParent, StructuralPropertyDescriptor property){
+		this.leftParent = leftParent;
+		this.rightParent = rightParent;
 		this.property = property;
 	}
 
-	public ASTNode getLeft() {
-		return left;
+	public ASTNode getLeftParent() {
+		return leftParent;
 	}
 
-	public ASTNode getRight() {
-		return right;
+	public ASTNode getRightParent() {
+		return rightParent;
 	}
 
 	public StructuralPropertyDescriptor getProperty() {
@@ -29,24 +31,28 @@ public class Update extends Operation {
 	}
 	
 	public Object leftValue(){
-		return left.getStructuralProperty(property);
+		return leftParent.getStructuralProperty(property);
 	}
 	
 	public Object rightValue(){
-		return right.getStructuralProperty(property);
+		return rightParent.getStructuralProperty(property);
 	}
 	
 	
 	
 	public ASTNode apply(){
 		if(property.isSimpleProperty()){
-			Object value = right.getStructuralProperty(property);
-			left.setStructuralProperty(property, value);
+			Object value = rightParent.getStructuralProperty(property);
+			leftParent.setStructuralProperty(property, value);
 		} else {
-			ASTNode node = (ASTNode) right.getStructuralProperty(property);
-			ASTNode value = ASTNode.copySubtree(AST.newAST(AST.JLS4), node);
-			left.setStructuralProperty(property, value);
+			ASTNode node = (ASTNode) rightParent.getStructuralProperty(property);
+			ASTNode value = ASTNode.copySubtree(leftParent.getAST(), node);
+			leftParent.setStructuralProperty(property, value);
 		}
-		return left;
+		return leftParent;
+	}
+	
+	public String toString(){
+		return "Update: " + leftParent.toString() + " " + property.toString();
 	}
 }

@@ -5,7 +5,7 @@ import java.util.List;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
-public class Move extends Operation {
+public class Move implements IOperation {
 
 	ASTNode parent, newParent;
 	ASTNode leftNode;
@@ -49,5 +49,9 @@ public class Move extends Operation {
 			newParent.setStructuralProperty(property, leftNode);
 		}
 		return leftNode;
+	}
+	
+	public String toString(){
+		return "Move: " + leftNode.toString();
 	}
 }
