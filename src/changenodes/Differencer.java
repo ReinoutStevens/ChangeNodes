@@ -52,6 +52,14 @@ public class Differencer implements IDifferencer {
 		this.outOfOrder = new LinkedList<ASTNode>();
 	}
 	
+	/* left is modified during execution, use it for debugging */
+	public ASTNode getLeft(){
+		return left;
+	}
+	
+	public ASTNode getRight(){
+		return right;
+	}
 	
 	@Override
 	public void difference() throws MatchingException {
@@ -81,10 +89,7 @@ public class Differencer implements IDifferencer {
 					IOperation operation;
 					if(prop.isChildListProperty()){
 						index = findPosition(current);
-						operation = new Insert(parentPartner, parent, current, prop, index);
-						ASTNode newNode = operation.apply();
-						leftMatchingPrime.put(newNode, current);
-						rightMatchingPrime.put(current, newNode);
+						operation = insert(parentPartner, parent, current, prop, index);
 					} else {
 						//We are inserting a 'property' that has a unique value in the ast, meaning we delete the original value
 						//Instead of outputting a delete+insert we output an update
@@ -126,13 +131,66 @@ public class Differencer implements IDifferencer {
 	}
 	
 	
+	/* Updates the simple properties of leftNode to rightNode.
+	 * Other properties are updated at a later point in time as they are ASTNodes
+	 */
 	private void update(ASTNode left, ASTNode right){
-		for(StructuralPropertyDescriptor prop : decider.getValues(left)){
-			if(!comparator.compareProperty(left, right, prop)){
-				//value property differs
-				Update update = new Update(left, right, prop);
-				addOperation(update);
-				update.apply();
+		List<StructuralPropertyDescriptor> properties = (List<StructuralPropertyDescriptor>) right.structuralPropertiesForType();
+		for(StructuralPropertyDescriptor prop : properties){
+			if(prop.isSimpleProperty()){
+				if(!left.getStructuralProperty(prop).equals(right.getStructuralProperty(prop))){
+					Update update = new Update(left, right, prop);
+					addOperation(update);
+					update.apply();
+				}
+			}
+		}
+	}
+	
+	private Insert insert(ASTNode parentPartner, ASTNode parent,ASTNode current,StructuralPropertyDescriptor prop,int index){
+		Insert insert = new Insert(parentPartner, parent, current, prop, index);
+		ASTNode newNode = insert.apply();
+		leftMatchingPrime.put(newNode, current);
+		rightMatchingPrime.put(current, newNode);
+		insertChildren(newNode, current);
+		return insert;
+	}
+	
+	/*
+	 * recursively outputs Insert operations for
+	 */
+	private void insertChildren(ASTNode newNode, ASTNode otherNode){
+		for (Iterator iterator = newNode.structuralPropertiesForType().iterator(); iterator.hasNext();) {
+			StructuralPropertyDescriptor prop = (StructuralPropertyDescriptor) iterator.next();
+			Object lValue, rValue;
+			lValue = newNode.getStructuralProperty(prop);
+			rValue = otherNode.getStructuralProperty(prop);
+			if(lValue != null && rValue != null){
+				if(prop.isChildProperty()){
+					ASTNode lNode = (ASTNode) lValue;
+					ASTNode rNode = (ASTNode) rValue;
+					Insert insert = new Insert(newNode,otherNode,rNode, prop, -1);
+					leftMatchingPrime.put(lNode, rNode);
+					rightMatchingPrime.put(rNode,lNode);
+					addOperation(insert);
+					insertChildren(lNode, rNode);
+				} else if(prop.isChildListProperty()){
+					List<ASTNode> lChildren = (List<ASTNode>) lValue;
+					List<ASTNode> rChildren = (List<ASTNode>) rValue;
+					for(int i = 0; i < lChildren.size(); ++i){
+						ASTNode lNode = lChildren.get(i);
+						ASTNode rNode = rChildren.get(i);
+						Insert insert = new Insert(newNode,otherNode,rNode, prop, i);
+						leftMatchingPrime.put(lNode, rNode);
+						rightMatchingPrime.put(rNode,lNode);
+						addOperation(insert);
+						insertChildren(lNode, rNode);
+					}
+				} else {
+					//Objects
+					Update update = new Update(newNode, otherNode, prop);
+					addOperation(update);
+				}
 			}
 		}
 	}
@@ -212,6 +270,7 @@ public class Differencer implements IDifferencer {
 			}
 		}
 		//apply deletes (so not to mess up our iterator)
+		//deletes can probably be cleaner by deleting just the parent node and not the parent node + all children
 		for(Delete delete : deletes){
 			delete.apply();
 		}
@@ -285,7 +344,7 @@ public class Differencer implements IDifferencer {
 		if(previousSibling == null){
 			return 0;
 		}
-		ASTNode partner = rightMatching.get(node);
+		ASTNode partner = rightMatchingPrime.get(previousSibling);
 		assert(partner != null);
 		// 5. Suppose u is the ith child of its parent
         // (counting from left to right) that is marked "in order"
@@ -324,6 +383,26 @@ public class Differencer implements IDifferencer {
 	
 	private void addOperation(IOperation operation){
 		operations.add(operation);
+	}
+	
+	private void addSubtreeMatching(ASTNode left, ASTNode right){
+		leftMatchingPrime.put(left, right);
+		rightMatchingPrime.put(right, left);
+		for (Iterator iterator = left.structuralPropertiesForType().iterator(); iterator.hasNext();) {
+			StructuralPropertyDescriptor prop = (StructuralPropertyDescriptor) iterator.next();
+			if(prop.isChildProperty()){
+				ASTNode leftNode = (ASTNode) left.getStructuralProperty(prop);
+				ASTNode rightNode = (ASTNode) right.getStructuralProperty(prop);
+				addSubtreeMatching(leftNode, rightNode);
+			} else if(prop.isChildProperty()){
+				List<ASTNode> leftNodes = (List<ASTNode>) left.getStructuralProperty(prop);
+				List<ASTNode> rightNodes = (List<ASTNode>) right.getStructuralProperty(prop);
+				assert(leftNodes.size() == rightNodes.size());
+				for(int i = 0; i < leftNodes.size(); ++i){
+					addSubtreeMatching(leftNodes.get(i), rightNodes.get(i));
+				}
+			}
+		}
 	}
 	
 }

@@ -11,14 +11,15 @@ import changenodes.comparing.BreadthFirstNodeIterator;
 import changenodes.comparing.NaiveASTMatcher;
 
 public class SubtreeMatcher implements IMatcher{
-	ASTMatcher matcher = new NaiveASTMatcher();
+	ASTMatcher matcher;
 	private HashMap<ASTNode, ASTNode> leftMatching;
 	private HashMap<ASTNode, ASTNode> rightMatching;
 	
 	
 	public SubtreeMatcher(){
-		leftMatching = new HashMap<ASTNode, ASTNode>();
-		rightMatching = new HashMap<ASTNode, ASTNode>();
+		this.leftMatching = new HashMap<ASTNode, ASTNode>();
+		this.rightMatching = new HashMap<ASTNode, ASTNode>();
+		this.matcher = new NaiveASTMatcher(leftMatching, rightMatching);
 	}
 	
 	@Override

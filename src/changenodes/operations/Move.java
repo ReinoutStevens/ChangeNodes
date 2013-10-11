@@ -42,6 +42,7 @@ public class Move implements IOperation {
 	
 	
 	public ASTNode apply(){
+		leftNode.delete();
 		if(property.isChildListProperty()){
 			List<ASTNode> coll = (List<ASTNode>) newParent.getStructuralProperty(property);
 			coll.add(index, leftNode);

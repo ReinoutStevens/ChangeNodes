@@ -2,6 +2,7 @@ package changenodes.comparing;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Stack;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -27,8 +28,7 @@ public abstract class AbstractNodeIterator implements Iterator<ASTNode>{
 	protected abstract ASTNode peek();
 	
 	
-	@Override
-	public ASTNode next() {
+	public ASTNode next2() {
 		ASTNode top = this.removeNode();
 		Collection<StructuralPropertyDescriptor> childProperties = decider.getChildren(top);
 		if(childProperties.isEmpty()){
@@ -36,21 +36,38 @@ public abstract class AbstractNodeIterator implements Iterator<ASTNode>{
 		}
 		for(StructuralPropertyDescriptor prop : childProperties){
 			Object propValue = top.getStructuralProperty(prop);
-			if(prop.isSimpleProperty()){
-				processProperty((SimplePropertyDescriptor) prop, propValue);
-			}
-			if(prop.isChildProperty()){
-				processProperty((ChildPropertyDescriptor) prop, propValue);
-			}
-			if(prop.isChildListProperty()){
-				processProperty((ChildListPropertyDescriptor) prop, propValue);
-			}
+			processProperty(prop, propValue);
 		}
 		return top;
 	}
 	
+	@Override
+	public ASTNode next() {
+		ASTNode top = this.removeNode();
+		for (Iterator iterator = top.structuralPropertiesForType().iterator(); iterator.hasNext();) {
+			StructuralPropertyDescriptor prop = (StructuralPropertyDescriptor) iterator.next();
+			Object value = top.getStructuralProperty(prop);
+			processProperty(prop, value);
+		}
+		return top;
+	}
+	
+	
+	private void processProperty(StructuralPropertyDescriptor prop, Object value){
+		if(prop.isSimpleProperty()){
+			processSimpleProperty(prop, value);
+		}
+		if(prop.isChildProperty()){
+			processChildProperty(prop, value);
+		}
+		if(prop.isChildListProperty()){
+			processChildListProperty(prop, value);
+		}
+	}
+	
 		
-	private void processProperty(ChildPropertyDescriptor prop, Object object){
+	private void processChildProperty(StructuralPropertyDescriptor prop, Object object){
+		assert(prop.isChildProperty());
 		ASTNode value = (ASTNode) object;
 		if(value != null){
 			this.addNode(value);
@@ -58,14 +75,16 @@ public abstract class AbstractNodeIterator implements Iterator<ASTNode>{
 	}
 	
 	@SuppressWarnings("unchecked")
-	private void processProperty(ChildListPropertyDescriptor prop, Object object){
+	private void processChildListProperty(StructuralPropertyDescriptor prop, Object object){
+		assert(prop.isChildListProperty());
 		Collection<ASTNode> values = (Collection<ASTNode>) object;
 		for(ASTNode value : values){
 			this.addNode(value);
 		}
 	}
 	
-	private void processProperty(SimplePropertyDescriptor prop, Object object){
+	private void processSimpleProperty(StructuralPropertyDescriptor prop, Object object){
+		assert(prop.isSimpleProperty());
 		//nothing
 	}
 	

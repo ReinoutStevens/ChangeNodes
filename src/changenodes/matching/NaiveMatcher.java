@@ -13,7 +13,7 @@ public class NaiveMatcher implements IMatcher {
 
 	INodeComparator comparator;
 	Map<ASTNode, ASTNode> leftMatching;
-		Map<ASTNode, ASTNode> rightMatching;
+	Map<ASTNode, ASTNode> rightMatching;
 	
 	
 	
