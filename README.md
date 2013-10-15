@@ -8,3 +8,13 @@ The algorithm is based on the paper "Change Detection in Hierarchically Structur
 It has been used in other tools as well, eg. ChangeDistiller ( https://bitbucket.org/sealuzh/tools-changedistiller ).
 
 This is an early implementation of the algorithm, and parts still need to be improved.
+
+
+
+Usage
+-----
+
+    (def diff (new changenodes.Differencer (first asts) (second asts)))
+    (.difference diff)
+    (.getOperations diff)
+    
