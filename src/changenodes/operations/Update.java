@@ -38,7 +38,13 @@ public class Update implements IOperation {
 		return rightParent.getStructuralProperty(property);
 	}
 	
+	public ASTNode getAffectedNode(){
+		return leftParent;
+	}
 	
+	public Update setAffectedNode(ASTNode node){
+		return new Update(node, rightParent, property);
+	}
 	
 	public ASTNode apply(){
 		if(property.isSimpleProperty()){
@@ -55,4 +61,5 @@ public class Update implements IOperation {
 	public String toString(){
 		return "Update: " + leftParent.toString() + " " + property.toString();
 	}
+
 }

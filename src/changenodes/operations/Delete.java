@@ -13,9 +13,13 @@ public class Delete implements IOperation {
 	public Delete(ASTNode leftNode){
 		this.leftNode = leftNode;
 	}
-	
-	public ASTNode getLeftNode(){
+		
+	public ASTNode getAffectedNode(){
 		return leftNode;
+	}
+	
+	public Delete setAffectedNode(ASTNode node){
+		return new Delete(node);
 	}
 	
 	public ASTNode apply(){

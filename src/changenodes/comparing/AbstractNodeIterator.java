@@ -13,7 +13,6 @@ import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 public abstract class AbstractNodeIterator implements Iterator<ASTNode>{
 
-	protected PropertyDecider decider;
 
 	@Override
 	public abstract boolean hasNext();
@@ -27,19 +26,6 @@ public abstract class AbstractNodeIterator implements Iterator<ASTNode>{
 	protected abstract ASTNode removeNode();
 	protected abstract ASTNode peek();
 	
-	
-	public ASTNode next2() {
-		ASTNode top = this.removeNode();
-		Collection<StructuralPropertyDescriptor> childProperties = decider.getChildren(top);
-		if(childProperties.isEmpty()){
-			return top;
-		}
-		for(StructuralPropertyDescriptor prop : childProperties){
-			Object propValue = top.getStructuralProperty(prop);
-			processProperty(prop, propValue);
-		}
-		return top;
-	}
 	
 	@Override
 	public ASTNode next() {

@@ -21,6 +21,14 @@ public class Insert implements IOperation {
 		this.property = property;
 		this.index = index;
 	}
+	
+	public ASTNode getAffectedNode(){
+		return leftParent;
+	}
+	
+	public Insert setAffectedNode(ASTNode node){
+		return new Insert(node, rightParent, rightNode, property, index);
+	}
 
 	public ASTNode getRightParent() {
 		return rightParent;

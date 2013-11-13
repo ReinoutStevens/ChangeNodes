@@ -52,6 +52,7 @@ public class NaiveASTMatcher extends ASTMatcher {
 		return node instanceof CompilationUnit;
 	}
 	
+	
 	public boolean match(PackageDeclaration decl, Object node){
 		return node instanceof PackageDeclaration;
 	}

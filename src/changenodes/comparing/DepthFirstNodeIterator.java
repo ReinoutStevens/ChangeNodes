@@ -15,12 +15,7 @@ public class DepthFirstNodeIterator extends AbstractNodeIterator {
 	private Stack<ASTNode> nodeStack;
 	
 	public DepthFirstNodeIterator(ASTNode start){
-		this(start, new PropertyDecider());
-	}
-	
-	public DepthFirstNodeIterator(ASTNode start, PropertyDecider decider){
 		this.nodeStack = new Stack<ASTNode>();
-		this.decider = decider;
 		this.addNode(start);
 	}
 

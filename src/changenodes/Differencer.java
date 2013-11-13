@@ -13,12 +13,8 @@ import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 import changenodes.comparing.BreadthFirstNodeIterator;
 import changenodes.comparing.DepthFirstNodeIterator;
-import changenodes.comparing.INodeComparator;
-import changenodes.comparing.NaiveComparator;
-import changenodes.comparing.PropertyDecider;
 import changenodes.matching.IMatcher;
 import changenodes.matching.MatchingException;
-import changenodes.matching.NaiveMatcher;
 import changenodes.matching.SubtreeMatcher;
 import changenodes.operations.*;
 
@@ -38,17 +34,13 @@ public class Differencer implements IDifferencer {
 	private List<ASTNode> outOfOrder;
 	
 	private IMatcher matcher;
-	private INodeComparator comparator;
-	private PropertyDecider decider;
 	
 	public Differencer(ASTNode left, ASTNode right){
 		//copy left tree as we will be modifying it
 		AST ast = AST.newAST(AST.JLS4);
 		this.left = ASTNode.copySubtree(ast, left);
 		this.right = right;
-		this.comparator = new NaiveComparator();
 		this.matcher = new SubtreeMatcher();
-		this.decider = PropertyDecider.getInstance();
 		this.outOfOrder = new LinkedList<ASTNode>();
 	}
 	
@@ -196,12 +188,12 @@ public class Differencer implements IDifferencer {
 	}
 	
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void alignChildren(ASTNode left, ASTNode right){
-		Collection<StructuralPropertyDescriptor> leftProps = decider.getChildren(left);
-		Collection<StructuralPropertyDescriptor> rightProps = decider.getChildren(right);
+		List leftProps = left.structuralPropertiesForType();
 		
-	
-		for(StructuralPropertyDescriptor prop : leftProps){
+		for (Iterator iterator = leftProps.iterator(); iterator.hasNext();) {
+			StructuralPropertyDescriptor prop = (StructuralPropertyDescriptor) iterator.next();
 			Object leftObj = left.getStructuralProperty(prop);
 			Object rightObj = right.getStructuralProperty(prop);
 			if(prop.isChildListProperty()){ 
@@ -254,7 +246,7 @@ public class Differencer implements IDifferencer {
 		if(prop.isChildListProperty()){
 			position = findPosition(rightNode);
 		} 
-		move = new Move(parent, newParent, node, prop, position);
+		move = new Move(node, newParent, prop, position);
 		move.apply();
 	}
 	

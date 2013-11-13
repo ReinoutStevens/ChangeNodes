@@ -9,14 +9,9 @@ public class BreadthFirstNodeIterator extends AbstractNodeIterator {
 
 	
 	private Queue<ASTNode> nodeQueue;
-	
+
 	public BreadthFirstNodeIterator(ASTNode start){
-		this(start, new PropertyDecider());
-	}
-	
-	public BreadthFirstNodeIterator(ASTNode start, PropertyDecider decider){
 		this.nodeQueue = new LinkedList<ASTNode>();
-		this.decider = decider;
 		this.addNode(start);
 	}
 	@Override

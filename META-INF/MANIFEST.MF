@@ -6,7 +6,6 @@ Bundle-Version: 1.0.0.qualifier
 Export-Package: changenodes,
  changenodes.comparing,
  changenodes.matching,
- changenodes.nodes,
  changenodes.operations
 Require-Bundle: org.eclipse.jdt.core;bundle-version="3.8.3",
  org.eclipse.ui;bundle-version="3.104.0",
