@@ -5,7 +5,7 @@ package changenodes.matching;
  * Original code can be retrieved from bitbucket.org/sealuzh/tools-changedistiller
  * No major conceptual changes were introduced
  * Code was adapted so it works directly on JDT nodes instead of the intermediate format
- *
+ * Note that the code no longer works for comments, which are not present in JDT.
  */
 
 /*
@@ -30,6 +30,7 @@ package changenodes.matching;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +38,13 @@ import java.util.Map;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 import changenodes.comparing.DepthFirstNodeIterator;
+import changenodes.matching.calculators.ChawatheCalculator;
+import changenodes.matching.calculators.NGramsCalculator;
+import changenodes.matching.calculators.NodeSimilarityCalculator;
+import changenodes.matching.calculators.StringSimilarityCalculator;
+import changenodes.matching.calculators.TokenBasedCalculator;
 
-public class BestLeafTreeMatcher {
+public class BestLeafTreeMatcher implements IMatcher {
 
     private StringSimilarityCalculator fLeafGenericStringSimilarityCalculator;
     private double fLeafGenericStringSimilarityThreshold;
@@ -86,7 +92,11 @@ public class BestLeafTreeMatcher {
        fNodeStringSimilarityThreshold = leafStringSimThreshold;
        fNodeSimilarityCalculator = nodeSimCalc;
        fNodeSimilarityThreshold = nodeSimThreshold;
-	   
+       this.leftMatching = new HashMap<ASTNode, ASTNode>();
+       this.rightMatching = new HashMap<ASTNode, ASTNode>();
+       nodeSimCalc.setLeftMatching(leftMatching);
+       nodeSimCalc.setRightMatching(rightMatching);
+
    }
 		   
    
@@ -100,11 +110,12 @@ public class BestLeafTreeMatcher {
         fDynamicEnabled = false;
     }
 
-    public void setMatching(Map<ASTNode, ASTNode> leftMatching, Map<ASTNode, ASTNode> rightMatching) {
-        this.leftMatching = leftMatching;
-        this.rightMatching = rightMatching;
-        fNodeSimilarityCalculator.setLeftMatching(leftMatching);
-        fNodeSimilarityCalculator.setRightMatching(rightMatching);
+    public Map<ASTNode, ASTNode> getLeftMatching(){
+    	return this.leftMatching;
+    }
+    
+    public Map<ASTNode, ASTNode> getRightMatching(){
+    	return this.rightMatching;
     }
 
     public void match(ASTNode left, ASTNode right) {
@@ -120,7 +131,7 @@ public class BestLeafTreeMatcher {
         for (Iterator<ASTNode> iterator = new DepthFirstNodeIterator(left); iterator.hasNext();) {
 			ASTNode x =  iterator.next();
 			if(! leftMatching.containsKey(x) && (! NodeClassifier.isLeafStatement(x) || NodeClassifier.isRoot(x))){
-		        for (Iterator<ASTNode> rightIterator = new DepthFirstNodeIterator(right); iterator.hasNext();) {
+		        for (Iterator<ASTNode> rightIterator = new DepthFirstNodeIterator(right); rightIterator.hasNext();) {
 		        	ASTNode y = rightIterator.next();
 		        	if( (!rightMatching.containsKey(y)
 		        			&& (! NodeClassifier.isLeafStatement(y) || NodeClassifier.isRoot(y))) 

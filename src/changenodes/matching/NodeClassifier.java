@@ -28,6 +28,7 @@ public class NodeClassifier {
 	    	case ASTNode.METHOD_INVOCATION:
 	    	case ASTNode.MODIFIER:
 	    	case ASTNode.NULL_LITERAL:
+	    	case ASTNode.NUMBER_LITERAL:
 	    	case ASTNode.PACKAGE_DECLARATION:
 	    	case ASTNode.PARAMETERIZED_TYPE:
 	    	case ASTNode.PRIMITIVE_TYPE:

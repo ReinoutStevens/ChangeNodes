@@ -13,6 +13,7 @@ import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 import changenodes.comparing.BreadthFirstNodeIterator;
 import changenodes.comparing.DepthFirstNodeIterator;
+import changenodes.matching.BestLeafTreeMatcher;
 import changenodes.matching.IMatcher;
 import changenodes.matching.MatchingException;
 import changenodes.matching.SubtreeMatcher;
@@ -61,7 +62,7 @@ public class Differencer implements IDifferencer {
 		//initialize M
 		leftMatchingPrime = new HashMap<ASTNode, ASTNode>();
 		rightMatchingPrime = new HashMap<ASTNode, ASTNode>();
-		matcher = new SubtreeMatcher();
+		matcher = new BestLeafTreeMatcher();
 		partialMatching();
 		//M' <- M
 		//For some reason ChangeDistiller does a regular = here

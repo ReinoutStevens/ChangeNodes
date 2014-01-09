@@ -1,4 +1,4 @@
-package changenodes.matching;
+package changenodes.matching.calculators;
 
 /* 
  * Taken and adapted from changedistiller
@@ -31,9 +31,11 @@ package changenodes.matching;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.eclipse.jdt.core.dom.ASTMatcher;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 import changenodes.comparing.DepthFirstNodeIterator;
+import changenodes.matching.NodeClassifier;
 
 public class ChawatheCalculator implements NodeSimilarityCalculator {
 	
@@ -78,8 +80,11 @@ public class ChawatheCalculator implements NodeSimilarityCalculator {
     	if(child == null){
     		return false;
     	}
+    	if(parent == null){
+    		return false;
+    	}
     	ASTNode childParent = child.getParent();
-    	return childParent.equals(parent) || isDescendant(parent, childParent);
+    	return parent.subtreeMatch(new ASTMatcher() , childParent) || isDescendant(parent, childParent);
     }
    
     

@@ -1,4 +1,4 @@
-package changenodes.matching;
+package changenodes.matching.calculators;
 
 /* 
  * Taken and adapted from changedistiller

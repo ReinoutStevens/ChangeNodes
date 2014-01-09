@@ -1,4 +1,4 @@
-package changenodes.matching;
+package changenodes.matching.calculators;
 
 import java.util.Map;
 
