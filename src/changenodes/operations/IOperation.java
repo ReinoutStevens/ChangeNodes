@@ -8,4 +8,5 @@ public interface IOperation {
 	
 	public IOperation setAffectedNode(ASTNode node);
 	public ASTNode getAffectedNode();
+	public ASTNode getOriginal();
 }

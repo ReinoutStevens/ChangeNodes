@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 import changenodes.comparing.DepthFirstNodeIterator;
 import changenodes.matching.calculators.ChawatheCalculator;
@@ -148,11 +149,42 @@ public class BestLeafTreeMatcher implements IMatcher {
         for (LeafPair pair : matchedLeafs) {
             ASTNode x = pair.getLeft();
             ASTNode y = pair.getRight();
-            if(!(leftMatching.containsKey(x) || rightMatching.containsKey(y))){
-            	leftMatching.put(x, y);
-            	rightMatching.put(y, x);
-            }
+            markMatchedNode(x, y);
         }
+    }
+    
+    //2 nodes match so we match them and all of their children
+    @SuppressWarnings("unchecked")
+	private void markMatchedNode(ASTNode left, ASTNode right){
+    	if(!(leftMatching.containsKey(left) || rightMatching.containsKey(right))){
+    		leftMatching.put(left, right);
+    		rightMatching.put(right, left);
+    		List<StructuralPropertyDescriptor> props = (List<StructuralPropertyDescriptor>) left.structuralPropertiesForType();
+    		for(StructuralPropertyDescriptor prop : props){
+    			if(prop.isChildProperty()){
+    				ASTNode newLeft, newRight;
+    				newLeft = (ASTNode) left.getStructuralProperty(prop);
+    				newRight = (ASTNode) right.getStructuralProperty(prop);
+    				if(newLeft != null && newRight != null){
+    					markMatchedNode(newLeft, newRight);
+    				}
+    			} else if(prop.isChildListProperty()){
+    				List<ASTNode> lefts, rights;
+    				lefts = (List<ASTNode>) left.getStructuralProperty(prop);
+    				rights = (List<ASTNode>) right.getStructuralProperty(prop);
+    				assert(lefts.size() == rights.size());
+    				Iterator<ASTNode> leftIt = lefts.iterator();
+    				for (Iterator<ASTNode> iterator = rights.iterator(); iterator.hasNext();) {
+						ASTNode rNode = iterator.next();
+						ASTNode lNode = leftIt.next();
+						if(lNode != null && rNode != null){
+							markMatchedNode(lNode, rNode);
+						}
+					}
+    			}
+    			//we dont handle simple props as they point to objects
+    		}
+    	}
     }
 
     private List<LeafPair> matchLeaves(ASTNode left, ASTNode right) {

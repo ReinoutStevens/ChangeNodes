@@ -9,17 +9,23 @@ import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 public class Delete implements IOperation {
 
 	ASTNode leftNode;
+	ASTNode original;
 	
-	public Delete(ASTNode leftNode){
+	public Delete(ASTNode original, ASTNode leftNode){
 		this.leftNode = leftNode;
+		this.original = original;
 	}
-		
+	
+	public ASTNode getOriginal() {
+		return original;
+	}
+	
 	public ASTNode getAffectedNode(){
 		return leftNode;
 	}
 	
 	public Delete setAffectedNode(ASTNode node){
-		return new Delete(node);
+		return new Delete(original, node);
 	}
 	
 	public ASTNode apply(){
@@ -38,7 +44,7 @@ public class Delete implements IOperation {
 	}
 	
 	public String toString(){
-		return "Delete: " + leftNode.toString();
+		return "Delete: " + original.toString();
 	}
 	
 	

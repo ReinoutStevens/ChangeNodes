@@ -7,18 +7,24 @@ import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 public class Move implements IOperation {
 
+	ASTNode original;
 	ASTNode newParent;
 	ASTNode leftNode;
 	StructuralPropertyDescriptor property;
 	int index;
 	
-	public Move(ASTNode node, ASTNode newParent, StructuralPropertyDescriptor property, int index){
+	public Move(ASTNode original, ASTNode node, ASTNode newParent, StructuralPropertyDescriptor property, int index){
+		this.original = original;
 		this.newParent = newParent;
 		this.leftNode = node;
 		this.property = property;
 		this.index = index;
 	}
 
+	public ASTNode getOriginal() {
+		return original;
+	}
+	
 	public ASTNode getNewParent() {
 		return newParent;
 	}
@@ -32,7 +38,7 @@ public class Move implements IOperation {
 	}
 	
 	public Move setAffectedNode(ASTNode node){
-		return new Move(node, newParent, property, index);
+		return new Move(original, node, newParent, property, index);
 	}
 
 	public StructuralPropertyDescriptor getProperty() {
@@ -56,6 +62,6 @@ public class Move implements IOperation {
 	}
 	
 	public String toString(){
-		return "Move: " + leftNode.toString();
+		return "Move: " + original.toString();
 	}
 }

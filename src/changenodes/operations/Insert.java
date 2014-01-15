@@ -8,13 +8,15 @@ import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 public class Insert implements IOperation {
 
+	ASTNode original;
 	ASTNode leftParent;
 	ASTNode rightParent;
 	ASTNode rightNode;
 	int index;
 	StructuralPropertyDescriptor property;
 	
-	public Insert(ASTNode leftParent, ASTNode rightParent, ASTNode rightNode, StructuralPropertyDescriptor property, int index){
+	public Insert(ASTNode original, ASTNode leftParent, ASTNode rightParent, ASTNode rightNode, StructuralPropertyDescriptor property, int index){
+		this.original = original;
 		this.leftParent = leftParent;
 		this.rightParent = rightParent;
 		this.rightNode = rightNode;
@@ -27,9 +29,13 @@ public class Insert implements IOperation {
 	}
 	
 	public Insert setAffectedNode(ASTNode node){
-		return new Insert(node, rightParent, rightNode, property, index);
+		return new Insert(original, node, rightParent, rightNode, property, index);
 	}
 
+	public ASTNode getOriginal() {
+		return original;
+	}
+	
 	public ASTNode getRightParent() {
 		return rightParent;
 	}

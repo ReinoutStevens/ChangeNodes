@@ -1,5 +1,6 @@
 package changenodes;
 
+import java.beans.PropertyDescriptor;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -16,7 +17,6 @@ import changenodes.comparing.DepthFirstNodeIterator;
 import changenodes.matching.BestLeafTreeMatcher;
 import changenodes.matching.IMatcher;
 import changenodes.matching.MatchingException;
-import changenodes.matching.SubtreeMatcher;
 import changenodes.operations.*;
 
 public class Differencer implements IDifferencer {
@@ -26,6 +26,10 @@ public class Differencer implements IDifferencer {
 	
 	private ASTNode left;
 	private ASTNode right;
+	
+	private ASTNode leftOriginal;
+	private ASTNode rightOriginal;
+	private Map<ASTNode, ASTNode> mapCopyToOriginal;
 	
 	private Collection<IOperation> operations;
 	private Map<ASTNode,ASTNode> leftMatching;
@@ -39,9 +43,11 @@ public class Differencer implements IDifferencer {
 	public Differencer(ASTNode left, ASTNode right){
 		//copy left tree as we will be modifying it
 		AST ast = AST.newAST(AST.JLS4);
+		this.leftOriginal = left;
 		this.left = ASTNode.copySubtree(ast, left);
-		this.right = right;
-		this.matcher = new SubtreeMatcher();
+		this.rightOriginal = right;
+		this.right = right; //right tree should not be modified, so we can keep it
+		this.matcher = new BestLeafTreeMatcher();
 		this.outOfOrder = new LinkedList<ASTNode>();
 	}
 	
@@ -56,6 +62,8 @@ public class Differencer implements IDifferencer {
 	
 	@Override
 	public void difference() throws MatchingException {
+		mapCopyToOriginal = matchOriginalAndCopy();
+		
 		//E is an empty list of operations
 		operations = new LinkedList<IOperation>();
 		outOfOrder = new LinkedList<ASTNode>();
@@ -86,7 +94,7 @@ public class Differencer implements IDifferencer {
 					} else {
 						//We are inserting a 'property' that has a unique value in the ast, meaning we delete the original value
 						//Instead of outputting a delete+insert we output an update
-						Update update = new Update(parentPartner, parent, prop);
+						Update update = new Update(getOriginal(parentPartner), parentPartner, parent, prop);
 						operation = update;
 						update.apply();
 						leftMatchingPrime.put((ASTNode) update.leftValue(), current);
@@ -132,7 +140,7 @@ public class Differencer implements IDifferencer {
 		for(StructuralPropertyDescriptor prop : properties){
 			if(prop.isSimpleProperty()){
 				if(!left.getStructuralProperty(prop).equals(right.getStructuralProperty(prop))){
-					Update update = new Update(left, right, prop);
+					Update update = new Update(getOriginal(left), left, right, prop);
 					addOperation(update);
 					update.apply();
 				}
@@ -141,16 +149,20 @@ public class Differencer implements IDifferencer {
 	}
 	
 	private Insert insert(ASTNode parentPartner, ASTNode parent,ASTNode current,StructuralPropertyDescriptor prop,int index){
-		Insert insert = new Insert(parentPartner, parent, current, prop, index);
+		Insert insert = new Insert(getOriginal(parentPartner), parentPartner, parent, current, prop, index);
 		ASTNode newNode = insert.apply();
 		leftMatchingPrime.put(newNode, current);
 		rightMatchingPrime.put(current, newNode);
+		//we dont call it recursively
 		insertChildren(newNode, current);
 		return insert;
 	}
 	
 	/*
-	 * recursively outputs Insert operations for
+	 * recursively outputs Insert operations for a newly inserted node
+	 * dont know whether this is actually useful or we should just output the parent node
+	 * note that we will not find corresponding nodes in the left tree
+	 * as we are inserting a bunch of new nodes that also have a newly introduced parent
 	 */
 	private void insertChildren(ASTNode newNode, ASTNode otherNode){
 		for (Iterator iterator = newNode.structuralPropertiesForType().iterator(); iterator.hasNext();) {
@@ -162,10 +174,10 @@ public class Differencer implements IDifferencer {
 				if(prop.isChildProperty()){
 					ASTNode lNode = (ASTNode) lValue;
 					ASTNode rNode = (ASTNode) rValue;
-					Insert insert = new Insert(newNode,otherNode,rNode, prop, -1);
+					//Insert insert = new Insert(getOriginal(newNode), newNode,otherNode,rNode, prop, -1);
 					leftMatchingPrime.put(lNode, rNode);
 					rightMatchingPrime.put(rNode,lNode);
-					addOperation(insert);
+					//addOperation(insert);
 					insertChildren(lNode, rNode);
 				} else if(prop.isChildListProperty()){
 					List<ASTNode> lChildren = (List<ASTNode>) lValue;
@@ -173,16 +185,16 @@ public class Differencer implements IDifferencer {
 					for(int i = 0; i < lChildren.size(); ++i){
 						ASTNode lNode = lChildren.get(i);
 						ASTNode rNode = rChildren.get(i);
-						Insert insert = new Insert(newNode,otherNode,rNode, prop, i);
+						//Insert insert = new Insert(getOriginal(newNode), newNode,otherNode,rNode, prop, i);
 						leftMatchingPrime.put(lNode, rNode);
 						rightMatchingPrime.put(rNode,lNode);
-						addOperation(insert);
+						//addOperation(insert);
 						insertChildren(lNode, rNode);
 					}
 				} else {
 					//Objects
-					Update update = new Update(newNode, otherNode, prop);
-					addOperation(update);
+					//Update update = new Update(getOriginal(newNode), newNode, otherNode, prop);
+					//addOperation(update);
 				}
 			}
 		}
@@ -247,7 +259,7 @@ public class Differencer implements IDifferencer {
 		if(prop.isChildListProperty()){
 			position = findPosition(rightNode);
 		} 
-		move = new Move(node, newParent, prop, position);
+		move = new Move(getOriginal(node), node, newParent, prop, position);
 		move.apply();
 	}
 	
@@ -258,7 +270,7 @@ public class Differencer implements IDifferencer {
 		for (Iterator<ASTNode> iterator = new DepthFirstNodeIterator(left); iterator.hasNext();) {
 			ASTNode node = iterator.next();
 			if(!leftMatchingPrime.containsKey(node)){
-				Delete delete = new Delete(node);
+				Delete delete = new Delete(getOriginal(node), node);
 				deletes.add(delete);
 			}
 		}
@@ -398,4 +410,28 @@ public class Differencer implements IDifferencer {
 		}
 	}
 	
+
+	private Map<ASTNode, ASTNode> matchOriginalAndCopy(){
+		Map<ASTNode, ASTNode> result = new HashMap<ASTNode, ASTNode>();
+		
+		DepthFirstNodeIterator origIt = new DepthFirstNodeIterator(leftOriginal);
+		for (DepthFirstNodeIterator copyIt = new DepthFirstNodeIterator(left); copyIt.hasNext();) {
+			ASTNode copy = copyIt.next();
+			ASTNode orig = origIt.next();
+			if(copy != null){
+				assert(orig != null);
+				result.put(copy, orig);
+			}
+		}
+		return result;
+	}
+	
+	private ASTNode getOriginal(ASTNode copy){
+		assert(mapCopyToOriginal != null);
+		ASTNode result = mapCopyToOriginal.get(copy);
+		if(result == null){
+			return null;
+		}
+		return result;
+	}
 }

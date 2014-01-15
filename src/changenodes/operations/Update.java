@@ -6,18 +6,24 @@ import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 public class Update implements IOperation {
 
+	private ASTNode original;
 	private ASTNode rightParent, leftParent;
 	private StructuralPropertyDescriptor property;
 	
 	/*
 	 * Update the property of leftParent to the value of that property of the rightParent
 	 */
-	public Update(ASTNode leftParent, ASTNode rightParent, StructuralPropertyDescriptor property){
+	public Update(ASTNode original, ASTNode leftParent, ASTNode rightParent, StructuralPropertyDescriptor property){
+		this.original = original;
 		this.leftParent = leftParent;
 		this.rightParent = rightParent;
 		this.property = property;
 	}
 
+	public ASTNode getOriginal() {
+		return original;
+	}
+	
 	public ASTNode getLeftParent() {
 		return leftParent;
 	}
@@ -43,7 +49,7 @@ public class Update implements IOperation {
 	}
 	
 	public Update setAffectedNode(ASTNode node){
-		return new Update(node, rightParent, property);
+		return new Update(original, node, rightParent, property);
 	}
 	
 	public ASTNode apply(){
@@ -59,7 +65,7 @@ public class Update implements IOperation {
 	}
 	
 	public String toString(){
-		return "Update: " + leftParent.toString() + " " + property.toString();
+		return "Update: " + original + " " + property.toString();
 	}
 
 }
