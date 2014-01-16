@@ -153,7 +153,6 @@ public class Differencer implements IDifferencer {
 		ASTNode newNode = insert.apply();
 		leftMatchingPrime.put(newNode, current);
 		rightMatchingPrime.put(current, newNode);
-		//we dont call it recursively
 		insertChildren(newNode, current);
 		return insert;
 	}

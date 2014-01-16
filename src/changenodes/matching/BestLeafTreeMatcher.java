@@ -38,6 +38,7 @@ import java.util.Map;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
+import changenodes.comparing.BreadthFirstNodeIterator;
 import changenodes.comparing.DepthFirstNodeIterator;
 import changenodes.matching.calculators.ChawatheCalculator;
 import changenodes.matching.calculators.NGramsCalculator;
@@ -129,10 +130,10 @@ public class BestLeafTreeMatcher implements IMatcher {
 
   
     private void matchNodes(ASTNode left, ASTNode right) {
-        for (Iterator<ASTNode> iterator = new DepthFirstNodeIterator(left); iterator.hasNext();) {
+        for (Iterator<ASTNode> iterator = new BreadthFirstNodeIterator(left); iterator.hasNext();) {
 			ASTNode x =  iterator.next();
 			if(! leftMatching.containsKey(x) && (! NodeClassifier.isLeafStatement(x) || NodeClassifier.isRoot(x))){
-		        for (Iterator<ASTNode> rightIterator = new DepthFirstNodeIterator(right); rightIterator.hasNext();) {
+		        for (Iterator<ASTNode> rightIterator = new BreadthFirstNodeIterator(right); rightIterator.hasNext();) {
 		        	ASTNode y = rightIterator.next();
 		        	if( (!rightMatching.containsKey(y)
 		        			&& (! NodeClassifier.isLeafStatement(y) || NodeClassifier.isRoot(y))) 
@@ -189,10 +190,10 @@ public class BestLeafTreeMatcher implements IMatcher {
 
     private List<LeafPair> matchLeaves(ASTNode left, ASTNode right) {
         List<LeafPair> matchedLeafs = new ArrayList<LeafPair>();
-        for (Iterator<ASTNode> iterator = new DepthFirstNodeIterator(left); iterator.hasNext();) {
+        for (Iterator<ASTNode> iterator = new BreadthFirstNodeIterator(left); iterator.hasNext();) {
 			ASTNode x =  iterator.next();
 			if(NodeClassifier.isLeafStatement(x)){
-				for(Iterator<ASTNode> rightIterator = new DepthFirstNodeIterator(right); rightIterator.hasNext();) {
+				for(Iterator<ASTNode> rightIterator = new BreadthFirstNodeIterator(right); rightIterator.hasNext();) {
 					ASTNode y = rightIterator.next();
 					if (NodeClassifier.isLeafStatement(y) && x.getNodeType() == y.getNodeType()){
 						double similarity = 0;
