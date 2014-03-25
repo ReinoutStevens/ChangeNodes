@@ -41,6 +41,7 @@ public class NodeClassifier {
 	    	case ASTNode.STRING_LITERAL:
 	    	case ASTNode.SUPER_FIELD_ACCESS:
 	    	case ASTNode.SUPER_METHOD_INVOCATION:
+	    	case ASTNode.SUPER_CONSTRUCTOR_INVOCATION:
 	    	case ASTNode.TYPE_LITERAL:
 	    	case ASTNode.TYPE_PARAMETER:
 	    	case ASTNode.VARIABLE_DECLARATION_FRAGMENT:
