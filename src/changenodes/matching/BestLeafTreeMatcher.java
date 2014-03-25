@@ -36,6 +36,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.BodyDeclaration;
+import org.eclipse.jdt.core.dom.IExtendedModifier;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 import changenodes.comparing.BreadthFirstNodeIterator;
@@ -140,6 +144,11 @@ public class BestLeafTreeMatcher implements IMatcher {
 		        			&&	equal(x, y)){
 		        		leftMatching.put(x, y);
 		        		rightMatching.put(y, x);
+		        		//special handling of MethodDeclarations, can probably be done cleaner
+		        		//note that this is not in the paper, but based on some example runs
+		        		if(x instanceof BodyDeclaration){
+		        			markBodyDeclaration(x, y);
+		        		}
 		        	}
 		        }
 			}
@@ -152,6 +161,27 @@ public class BestLeafTreeMatcher implements IMatcher {
             ASTNode y = pair.getRight();
             markMatchedNode(x, y);
         }
+    }
+    
+    private void markBodyDeclaration(ASTNode x, ASTNode y){
+    	BodyDeclaration leftMethod = (BodyDeclaration) x;
+    	BodyDeclaration rightMethod = (BodyDeclaration) y;
+    	List<IExtendedModifier> leftModifiers = (List<IExtendedModifier>) leftMethod.modifiers();
+    	List<IExtendedModifier> rightModifiers = (List<IExtendedModifier>) rightMethod.modifiers();
+    	for(IExtendedModifier lm : leftModifiers){
+    		if(lm.isModifier()){
+    			for(IExtendedModifier rm : rightModifiers){
+    				if(rm.isModifier()){
+    					Modifier clm = (Modifier) lm;
+    					Modifier crm = (Modifier) rm;
+    					if(crm.getKeyword().equals(clm.getKeyword())){
+        					leftMatching.put(clm, crm);
+        					rightMatching.put(crm, clm);
+    					}
+    				}
+    			}
+    		}
+    	}
     }
     
     //2 nodes match so we match them and all of their children

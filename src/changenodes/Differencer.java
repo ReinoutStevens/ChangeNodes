@@ -94,13 +94,20 @@ public class Differencer implements IDifferencer {
 					} else {
 						//We are inserting a 'property' that has a unique value in the ast, meaning we delete the original value
 						//Instead of outputting a delete+insert we output an update
-						Update update = new Update(getOriginal(parentPartner), parentPartner, parent, prop);
-						operation = update;
-						update.apply();
-						leftMatchingPrime.put((ASTNode) update.leftValue(), current);
-						rightMatchingPrime.put(current, (ASTNode) update.leftValue());
+						if(!parent.getStructuralProperty(prop).toString().equals(parentPartner.getStructuralProperty(prop).toString())){
+							Update update = new Update(getOriginal(parentPartner), parentPartner, parent, prop);
+							operation = update;
+							update.apply();
+							leftMatchingPrime.put((ASTNode) update.leftValue(), current);
+							rightMatchingPrime.put(current, (ASTNode) update.leftValue());
+							addOperation(operation);
+						} else {
+							if(prop.isChildProperty()){
+								leftMatchingPrime.put((ASTNode)parentPartner.getStructuralProperty(prop), current);
+								rightMatchingPrime.put(current, (ASTNode)parentPartner.getStructuralProperty(prop));
+							}
+						}
 					}
-					addOperation(operation);
 				} else { //x has a partner
 					ASTNode  partnerParent = currentPartner.getParent();
 					//check whether there is a value in current and partner that differs

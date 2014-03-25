@@ -26,6 +26,7 @@ public class NodeClassifier {
 	    	case ASTNode.JAVADOC:
 	    	case ASTNode.LINE_COMMENT:
 	    	case ASTNode.METHOD_INVOCATION:
+	    	case ASTNode.MARKER_ANNOTATION:
 	    	//case ASTNode.MODIFIER: //is too specific, gives very poor matches
 	    	case ASTNode.NULL_LITERAL:
 	    	case ASTNode.NUMBER_LITERAL:
@@ -35,7 +36,7 @@ public class NodeClassifier {
 	    	case ASTNode.QUALIFIED_NAME:
 	    	case ASTNode.QUALIFIED_TYPE:
 	    	case ASTNode.SIMPLE_NAME:
-	    	//case ASTNode.SIMPLE_TYPE:
+	    	case ASTNode.SIMPLE_TYPE:
 	    	case ASTNode.SINGLE_VARIABLE_DECLARATION:
 	    	case ASTNode.STRING_LITERAL:
 	    	case ASTNode.SUPER_FIELD_ACCESS:
