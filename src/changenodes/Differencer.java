@@ -121,7 +121,7 @@ public class Differencer implements IDifferencer {
 					}
 				}
 			}
-			alignChildren(left, right);
+			alignChildren(rightMatchingPrime.get(current), current);
 		}
 		delete();
 	}

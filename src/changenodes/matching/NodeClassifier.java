@@ -19,6 +19,7 @@ public class NodeClassifier {
 	    	case ASTNode.CHARACTER_LITERAL:
 	    	case ASTNode.CLASS_INSTANCE_CREATION:
 	    	case ASTNode.EMPTY_STATEMENT:
+	    	case ASTNode.EXPRESSION_STATEMENT:
 	    	case ASTNode.ENUM_CONSTANT_DECLARATION:
 	    	case ASTNode.FIELD_ACCESS:
 	    	case ASTNode.FIELD_DECLARATION:
