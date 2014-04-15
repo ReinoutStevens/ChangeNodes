@@ -46,6 +46,7 @@ public class NodeClassifier {
 	    	case ASTNode.TYPE_LITERAL:
 	    	case ASTNode.TYPE_PARAMETER:
 	    	case ASTNode.VARIABLE_DECLARATION_FRAGMENT:
+	    	case ASTNode.VARIABLE_DECLARATION_STATEMENT:
 	    		return true;
 	    	default:
 	    		return false;

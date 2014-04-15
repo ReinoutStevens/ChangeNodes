@@ -94,7 +94,9 @@ public class Differencer implements IDifferencer {
 					} else {
 						//We are inserting a 'property' that has a unique value in the ast, meaning we delete the original value
 						//Instead of outputting a delete+insert we output an update
-						if(!parent.getStructuralProperty(prop).toString().equals(parentPartner.getStructuralProperty(prop).toString())){
+						Object parentValue = parent.getStructuralProperty(prop);
+						Object parentPartnerValue = parentPartner.getStructuralProperty(prop);
+						if(!parentValue.toString().equals(parentPartnerValue.toString())){
 							Update update = new Update(getOriginal(parentPartner), parentPartner, parent, prop);
 							operation = update;
 							update.apply();
@@ -161,6 +163,7 @@ public class Differencer implements IDifferencer {
 		leftMatchingPrime.put(newNode, current);
 		rightMatchingPrime.put(current, newNode);
 		insertChildren(newNode, current);
+		addOperation(insert);
 		return insert;
 	}
 	
@@ -266,6 +269,7 @@ public class Differencer implements IDifferencer {
 			position = findPosition(rightNode);
 		} 
 		move = new Move(getOriginal(node), node, newParent, prop, position);
+		addOperation(move);
 		move.apply();
 	}
 	

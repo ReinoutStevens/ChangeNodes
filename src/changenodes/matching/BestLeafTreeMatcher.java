@@ -136,20 +136,30 @@ public class BestLeafTreeMatcher implements IMatcher {
     private void matchNodes(ASTNode left, ASTNode right) {
         for (Iterator<ASTNode> iterator = new BreadthFirstNodeIterator(left); iterator.hasNext();) {
 			ASTNode x =  iterator.next();
-			if(! leftMatching.containsKey(x) && (! NodeClassifier.isLeafStatement(x) || NodeClassifier.isRoot(x))){
+			ASTNode bestMatch = null;
+			double bestSimilarity = 0.0;
+			if(!leftMatching.containsKey(x) && (! NodeClassifier.isLeafStatement(x) || NodeClassifier.isRoot(x))){
 		        for (Iterator<ASTNode> rightIterator = new BreadthFirstNodeIterator(right); rightIterator.hasNext();) {
 		        	ASTNode y = rightIterator.next();
 		        	if( (!rightMatching.containsKey(y)
-		        			&& (! NodeClassifier.isLeafStatement(y) || NodeClassifier.isRoot(y))) 
-		        			&&	equal(x, y)){
-		        		leftMatching.put(x, y);
-		        		rightMatching.put(y, x);
-		        		//special handling of MethodDeclarations, can probably be done cleaner
-		        		//note that this is not in the paper, but based on some example runs
-		        		if(x instanceof BodyDeclaration){
-		        			markBodyDeclaration(x, y);
+		        			&& (! NodeClassifier.isLeafStatement(y) || NodeClassifier.isRoot(y)))){
+		        		double stringSimilarity = equal(x, y);
+		        		if(stringSimilarity >= fNodeStringSimilarityThreshold && stringSimilarity > bestSimilarity){
+		        			bestMatch = y;
+		        			bestSimilarity = stringSimilarity;
 		        		}
 		        	}
+		        }
+		        //we have found the best node, lets now match them together
+		        //afaik this is also not in the original paper, but we sometimes got some weird matches
+		        if(bestMatch != null){
+		        	leftMatching.put(x, bestMatch);
+		        	rightMatching.put(bestMatch, x);
+		        	//special handling of MethodDeclarations, can probably be done cleaner
+	        		//note that this is not in the paper, but based on some example runs
+	        		if(x instanceof BodyDeclaration){
+	        			markBodyDeclaration(x, bestMatch);
+	        		}
 		        }
 			}
         }
@@ -187,6 +197,9 @@ public class BestLeafTreeMatcher implements IMatcher {
     //2 nodes match so we match them and all of their children
     @SuppressWarnings("unchecked")
 	private void markMatchedNode(ASTNode left, ASTNode right){
+    	if(left.getNodeType() != right.getNodeType()){
+    		return;
+    	}
     	if(!(leftMatching.containsKey(left) || rightMatching.containsKey(right))){
     		leftMatching.put(left, right);
     		rightMatching.put(right, left);
@@ -203,15 +216,19 @@ public class BestLeafTreeMatcher implements IMatcher {
     				List<ASTNode> lefts, rights;
     				lefts = (List<ASTNode>) left.getStructuralProperty(prop);
     				rights = (List<ASTNode>) right.getStructuralProperty(prop);
-    				assert(lefts.size() == rights.size());
+    				int times = lefts.size();
+    				if(lefts.size() > rights.size()){
+    					times = rights.size();
+    				}
     				Iterator<ASTNode> leftIt = lefts.iterator();
-    				for (Iterator<ASTNode> iterator = rights.iterator(); iterator.hasNext();) {
-						ASTNode rNode = iterator.next();
+    				Iterator<ASTNode> rightIt = rights.iterator();
+    				for(int i = 0; i < times; ++i){
+    					ASTNode rNode = rightIt.next();
 						ASTNode lNode = leftIt.next();
 						if(lNode != null && rNode != null){
 							markMatchedNode(lNode, rNode);
 						}
-					}
+    				}
     			}
     			//we dont handle simple props as they point to objects
     		}
@@ -250,25 +267,27 @@ public class BestLeafTreeMatcher implements IMatcher {
     }
 
   
-    private boolean equal(ASTNode x, ASTNode y) {
+    private double equal(ASTNode x, ASTNode y) {
         // inner nodes
         if (areInnerOrRootNodes(x, y) && x.getNodeType() == y.getNodeType()) {
             // little heuristic
             if (NodeClassifier.isRoot(x)) {
-                return true;
+                return 1.0;
             } else {
                 double t = fNodeSimilarityThreshold;
                 
                 double simNode = fNodeSimilarityCalculator.calculateSimilarity(x, y);
                 double simString = fNodeStringSimilarityCalculator.calculateSimilarity(x.toString(), y.toString());
                 if ((simString < fNodeStringSimilarityThreshold) && (simNode >= WEIGHTING_THRESHOLD)) {
-                    return true;
+                    return simString;
                 } else {
-                    return (simNode >= t) && (simString >= fNodeStringSimilarityThreshold);
+                    if((simNode >= t) && (simString >= fNodeStringSimilarityThreshold)){
+                    	return simString;
+                    }
                 }
             }
         }
-        return false;
+        return 0;
     }
 
     private boolean areInnerOrRootNodes(ASTNode x, ASTNode y) {
