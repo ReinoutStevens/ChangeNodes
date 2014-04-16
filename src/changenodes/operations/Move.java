@@ -1,6 +1,7 @@
 package changenodes.operations;
 
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ChildPropertyDescriptor;

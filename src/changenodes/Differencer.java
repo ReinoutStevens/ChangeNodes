@@ -108,11 +108,11 @@ public class Differencer implements IDifferencer {
 							Update update = new Update(getOriginal(parentPartner), parentPartner, parent, prop);
 							operation = update;
 							update.apply();
-							leftMatchingPrime.put((ASTNode) update.leftValue(), current);
-							rightMatchingPrime.put(current, (ASTNode) update.leftValue());
+							//both nodes should be equal now
+							addSubtreeMatching((ASTNode) update.leftValue(), current);
 							addOperation(operation);
 						} else {
-							if(prop.isChildProperty()){
+							if(prop.isChildProperty()){ //these 2 are equal but dont match, lets match them
 								leftMatchingPrime.put((ASTNode)parentPartner.getStructuralProperty(prop), current);
 								rightMatchingPrime.put(current, (ASTNode)parentPartner.getStructuralProperty(prop));
 							}
@@ -287,7 +287,7 @@ public class Differencer implements IDifferencer {
 		List<Delete> deletes = new LinkedList<Delete>();
 		for (Iterator<ASTNode> iterator = new DepthFirstNodeIterator(left); iterator.hasNext();) {
 			ASTNode node = iterator.next();
-			if(!leftMatchingPrime.containsKey(node)){
+			if(node != null && !leftMatchingPrime.containsKey(node)){
 				Delete delete = new Delete(getOriginal(node), node);
 				deletes.add(delete);
 			}
@@ -417,7 +417,7 @@ public class Differencer implements IDifferencer {
 				ASTNode leftNode = (ASTNode) left.getStructuralProperty(prop);
 				ASTNode rightNode = (ASTNode) right.getStructuralProperty(prop);
 				addSubtreeMatching(leftNode, rightNode);
-			} else if(prop.isChildProperty()){
+			} else if(prop.isChildListProperty()){
 				List<ASTNode> leftNodes = (List<ASTNode>) left.getStructuralProperty(prop);
 				List<ASTNode> rightNodes = (List<ASTNode>) right.getStructuralProperty(prop);
 				assert(leftNodes.size() == rightNodes.size());
@@ -447,9 +447,6 @@ public class Differencer implements IDifferencer {
 	private ASTNode getOriginal(ASTNode copy){
 		assert(mapCopyToOriginal != null);
 		ASTNode result = mapCopyToOriginal.get(copy);
-		if(result == null){
-			return null;
-		}
 		return result;
 	}
 }
