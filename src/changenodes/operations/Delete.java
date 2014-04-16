@@ -3,6 +3,7 @@ package changenodes.operations;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ChildPropertyDescriptor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
@@ -38,6 +39,13 @@ public class Delete implements IOperation {
 			parent.setStructuralProperty(prop, null);
 		}*/
 		if(!alreadyDeleted()){
+			StructuralPropertyDescriptor prop = leftNode.getLocationInParent();
+			if(prop.isChildProperty()){
+				ChildPropertyDescriptor childProp = (ChildPropertyDescriptor) prop;
+				if(childProp.isMandatory()){
+					return leftNode;
+				}
+			}
 			leftNode.delete();
 		}
 		return leftNode;

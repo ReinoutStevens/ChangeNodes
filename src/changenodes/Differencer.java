@@ -96,7 +96,15 @@ public class Differencer implements IDifferencer {
 						//Instead of outputting a delete+insert we output an update
 						Object parentValue = parent.getStructuralProperty(prop);
 						Object parentPartnerValue = parentPartner.getStructuralProperty(prop);
-						if(!parentValue.toString().equals(parentPartnerValue.toString())){
+						boolean shouldUpdate = false;
+						//one of the 2 can be null, for example a method that returns void and another that returns int
+						//the void one will have a propertyvalue of null
+						if(parentValue == null || parentPartnerValue == null){ 
+							shouldUpdate = (parentValue != parentPartnerValue);
+						} else {
+							shouldUpdate = !parentValue.toString().equals(parentPartnerValue.toString());
+						}
+						if(shouldUpdate){
 							Update update = new Update(getOriginal(parentPartner), parentPartner, parent, prop);
 							operation = update;
 							update.apply();
