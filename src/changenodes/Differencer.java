@@ -288,8 +288,23 @@ public class Differencer implements IDifferencer {
 		for (Iterator<ASTNode> iterator = new DepthFirstNodeIterator(left); iterator.hasNext();) {
 			ASTNode node = iterator.next();
 			if(node != null && !leftMatchingPrime.containsKey(node)){
-				Delete delete = new Delete(getOriginal(node), node);
-				deletes.add(delete);
+				boolean parentAlreadyDeleted = false;
+				found:
+				for(Delete delete : deletes){
+					ASTNode potentialParent = delete.getAffectedNode();
+					ASTNode parent = node;
+					while(parent != null){
+						if(parent.equals(potentialParent)){
+							parentAlreadyDeleted = true;
+							break found;
+						}
+						parent = parent.getParent();
+					}
+				}
+				if(!parentAlreadyDeleted){
+					Delete delete = new Delete(getOriginal(node), node);
+					deletes.add(delete);
+				}
 			}
 		}
 		//apply deletes (so not to mess up our iterator)
