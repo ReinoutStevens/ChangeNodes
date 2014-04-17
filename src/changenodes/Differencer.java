@@ -409,6 +409,9 @@ public class Differencer implements IDifferencer {
 	}
 	
 	private void addSubtreeMatching(ASTNode left, ASTNode right){
+		if(left == null || right == null){
+			return;
+		}
 		leftMatchingPrime.put(left, right);
 		rightMatchingPrime.put(right, left);
 		for (Iterator iterator = left.structuralPropertiesForType().iterator(); iterator.hasNext();) {
