@@ -59,6 +59,7 @@ public class NodeClassifier {
 		   case ASTNode.BLOCK_COMMENT:
 		   case ASTNode.JAVADOC:
 		   case ASTNode.LINE_COMMENT:
+		   case ASTNode.TAG_ELEMENT:
 			   return true;
 		   default:	
 			   return false;

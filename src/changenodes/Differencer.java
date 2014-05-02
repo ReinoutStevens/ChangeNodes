@@ -156,7 +156,14 @@ public class Differencer implements IDifferencer {
 		List<StructuralPropertyDescriptor> properties = (List<StructuralPropertyDescriptor>) right.structuralPropertiesForType();
 		for(StructuralPropertyDescriptor prop : properties){
 			if(prop.isSimpleProperty()){
-				if(!left.getStructuralProperty(prop).equals(right.getStructuralProperty(prop))){
+				Object leftObj = left.getStructuralProperty(prop);
+				Object rightObj = right.getStructuralProperty(prop);
+				if(leftObj == null && rightObj == null){
+					return;
+				}
+				if((leftObj == null && rightObj != null) || 
+						(leftObj != null && rightObj == null) || 
+						!left.getStructuralProperty(prop).equals(right.getStructuralProperty(prop))){
 					Update update = new Update(getOriginal(left), left, right, prop);
 					addOperation(update);
 					update.apply();
