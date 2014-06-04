@@ -24,3 +24,8 @@ We mainly use ChangeNodes in Clojure. You somehow need to get two AST nodes (typ
     (.getOperations diff)
     
 ChangeNodes is meant to be used with QwalKeko, a history querying tool that reasons over projects stored in git. You can find it [here](https://github.com/ReinoutStevens/damp.qwalkeko). Examples can be found [here](https://github.com/ReinoutStevens/damp.qwalkeko/blob/master/src/qwalkeko/clj/changenodes.clj) and [here](https://github.com/ReinoutStevens/damp.qwalkeko/blob/master/src/qwalkeko/experiments/selenium.clj).
+
+
+Installation
+------------
+ChangeNodes is configured to be an Eclipse plugin. Installation is done by cloning this repository and importing it as a new Eclipse project. It includes all of its dependencies.
