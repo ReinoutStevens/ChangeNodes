@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: ChangeNodes
-Bundle-SymbolicName: ChangeNodes
+Bundle-SymbolicName: damp.changenodes.plugin
 Bundle-Version: 1.0.0.qualifier
 Export-Package: changenodes,
  changenodes.comparing,
