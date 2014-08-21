@@ -54,11 +54,15 @@ public class NodeClassifier {
 	    }	
 	   
 	   public static boolean isComment(ASTNode node){
+		   if(node.getParent() != null  && node.getParent().getNodeType() == ASTNode.TAG_ELEMENT){ //tag elements contain simple names
+			   return true;
+		   }
 		   int type = node.getNodeType();
 		   switch(type){
 		   case ASTNode.BLOCK_COMMENT:
 		   case ASTNode.JAVADOC:
 		   case ASTNode.LINE_COMMENT:
+		   case ASTNode.TEXT_ELEMENT:
 		   case ASTNode.TAG_ELEMENT:
 			   return true;
 		   default:	

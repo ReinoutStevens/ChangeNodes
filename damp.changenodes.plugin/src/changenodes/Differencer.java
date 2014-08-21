@@ -17,6 +17,7 @@ import changenodes.comparing.DepthFirstNodeIterator;
 import changenodes.matching.BestLeafTreeMatcher;
 import changenodes.matching.IMatcher;
 import changenodes.matching.MatchingException;
+import changenodes.matching.NodeClassifier;
 import changenodes.operations.*;
 
 public class Differencer implements IDifferencer {
@@ -42,7 +43,7 @@ public class Differencer implements IDifferencer {
 	
 	public Differencer(ASTNode left, ASTNode right){
 		//copy left tree as we will be modifying it
-		AST ast = AST.newAST(AST.JLS4);
+		AST ast = AST.newAST(AST.JLS8);
 		this.leftOriginal = left;
 		this.left = ASTNode.copySubtree(ast, left);
 		this.rightOriginal = right;
@@ -81,6 +82,9 @@ public class Differencer implements IDifferencer {
 		for (Iterator<ASTNode> rightBFT = new BreadthFirstNodeIterator(right); rightBFT.hasNext();) {
 			ASTNode current = rightBFT.next();
 			ASTNode parent = current.getParent();
+			if(NodeClassifier.isComment(current)){
+				continue;
+			}
 			if(parent != null){ //we are not working on the root
 				ASTNode currentPartner = rightMatchingPrime.get(current);
 				ASTNode parentPartner = rightMatchingPrime.get(parent); 
@@ -294,6 +298,9 @@ public class Differencer implements IDifferencer {
 		List<Delete> deletes = new LinkedList<Delete>();
 		for (Iterator<ASTNode> iterator = new DepthFirstNodeIterator(left); iterator.hasNext();) {
 			ASTNode node = iterator.next();
+			if(NodeClassifier.isComment(node)){
+				continue;
+			}
 			if(node != null && !leftMatchingPrime.containsKey(node)){
 				boolean parentAlreadyDeleted = false;
 				found:

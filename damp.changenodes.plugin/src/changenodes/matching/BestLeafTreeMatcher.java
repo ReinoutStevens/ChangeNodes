@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.core.dom.ASTMatcher;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.BodyDeclaration;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
@@ -128,6 +129,7 @@ public class BestLeafTreeMatcher implements IMatcher {
         List<LeafPair> matchedLeafs = matchLeaves(left, right);
         // sort matching set according to similarity in descending order
         Collections.sort(matchedLeafs);
+        matchIdenticalMethods(left, right);
         markMatchedLeaves(matchedLeafs);
         matchNodes(left, right);
     }
@@ -160,6 +162,34 @@ public class BestLeafTreeMatcher implements IMatcher {
 	        		if(x instanceof BodyDeclaration){
 	        			markBodyDeclaration(x, bestMatch);
 	        		}
+		        }
+			}
+        }
+    }
+    
+
+    private void matchIdenticalMethods(ASTNode left, ASTNode right) {
+    	//fix in which some methods got pretty bad matches
+    	//feels pretty dirty though (but so does this whole file)
+    	for (Iterator<ASTNode> iterator = new BreadthFirstNodeIterator(left); iterator.hasNext();) {
+			ASTNode n =  iterator.next();
+			ASTNode bestMatch = null;
+			if(n.getNodeType() == ASTNode.METHOD_DECLARATION){
+				MethodDeclaration x = (MethodDeclaration) n;
+				if(!leftMatching.containsKey(x)){
+					for (Iterator<ASTNode> rightIterator = new BreadthFirstNodeIterator(right); rightIterator.hasNext();) {
+						ASTNode y = rightIterator.next();
+						if(y.getNodeType() == x.getNodeType() && 
+								x.subtreeMatch(new ASTMatcher(), y)){
+							bestMatch = y;
+							break;
+						}
+					}
+				}
+			    //we have found the best node, lets now match them together
+		        //afaik this is also not in the original paper, but we sometimes got some weird matches
+		        if(bestMatch != null){
+		        	markMatchedNode(x,bestMatch);
 		        }
 			}
         }
