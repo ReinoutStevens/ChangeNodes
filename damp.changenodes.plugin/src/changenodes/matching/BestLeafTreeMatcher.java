@@ -29,11 +29,13 @@ package changenodes.matching;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.jdt.core.dom.ASTMatcher;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -138,6 +140,7 @@ public class BestLeafTreeMatcher implements IMatcher {
     private void matchNodes(ASTNode left, ASTNode right) {
         for (Iterator<ASTNode> iterator = new BreadthFirstNodeIterator(left); iterator.hasNext();) {
 			ASTNode x =  iterator.next();
+			Map<ASTNode, Double> candidateMatches = new HashMap<ASTNode, Double>();
 			ASTNode bestMatch = null;
 			double bestSimilarity = 0.0;
 			if(!leftMatching.containsKey(x) && (! NodeClassifier.isLeafStatement(x) || NodeClassifier.isRoot(x))){
@@ -146,15 +149,35 @@ public class BestLeafTreeMatcher implements IMatcher {
 		        	if( (!rightMatching.containsKey(y)
 		        			&& (! NodeClassifier.isLeafStatement(y) || NodeClassifier.isRoot(y)))){
 		        		double stringSimilarity = equal(x, y);
-		        		if(stringSimilarity >= fNodeStringSimilarityThreshold && stringSimilarity > bestSimilarity){
+		        		if(stringSimilarity >= fNodeStringSimilarityThreshold && stringSimilarity >= bestSimilarity){
+			        		candidateMatches.put(y, stringSimilarity);
 		        			bestMatch = y;
 		        			bestSimilarity = stringSimilarity;
 		        		}
 		        	}
 		        }
 		        //we have found the best node, lets now match them together
-		        //afaik this is also not in the original paper, but we sometimes got some weird matches
+		        //if multiple nodes have same similarity we try to find the node whose parents
+		        //match.
 		        if(bestMatch != null){
+		        	Collection<ASTNode> matches = new ArrayList<ASTNode>();
+		        	for(Entry<ASTNode, Double> candidatePair : candidateMatches.entrySet() ){
+		        		ASTNode candidate = candidatePair.getKey();
+		        		double similarity = candidatePair.getValue();
+		        		if(similarity == bestSimilarity){
+		        			matches.add(candidate);
+		        		}
+		        	}
+		        	for(ASTNode n : matches){
+		        		ASTNode parent = n.getParent();
+		        		if(parent != null){
+		        			ASTNode matchedParent = rightMatching.get(parent);
+		        			if(matchedParent != null && x.getParent().equals(matchedParent) && bestMatch != n){
+		        				//we have a match whose parents are already matched so this should be the best one
+		        				bestMatch = n;
+		        			}
+		        		}
+		        	}
 		        	leftMatching.put(x, bestMatch);
 		        	rightMatching.put(bestMatch, x);
 		        	//special handling of MethodDeclarations, can probably be done cleaner
