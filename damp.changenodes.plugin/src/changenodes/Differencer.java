@@ -181,7 +181,7 @@ public class Differencer implements IDifferencer {
 		ASTNode newNode = insert.apply();
 		leftMatchingPrime.put(newNode, current);
 		rightMatchingPrime.put(current, newNode);
-		insertChildren(newNode, current);
+		//insertChildren(newNode, current);
 		addOperation(insert);
 		return insert;
 	}
@@ -191,6 +191,10 @@ public class Differencer implements IDifferencer {
 	 * dont know whether this is actually useful or we should just output the parent node
 	 * note that we will not find corresponding nodes in the left tree
 	 * as we are inserting a bunch of new nodes that also have a newly introduced parent
+	 * 
+	 * Removed calls to this as output was incorrect in case parts of a subtree matched
+	 * but the parent node did not. In this case the parent node would add the children,
+	 * and the matched children would not get moved
 	 */
 	private void insertChildren(ASTNode newNode, ASTNode otherNode){
 		for (Iterator iterator = newNode.structuralPropertiesForType().iterator(); iterator.hasNext();) {
