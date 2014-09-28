@@ -29,3 +29,7 @@ ChangeNodes is meant to be used with QwalKeko, a history querying tool that reas
 Installation
 ------------
 ChangeNodes is configured to be an Eclipse plugin. Installation is done by cloning this repository and importing it as a new Eclipse project. It includes all of its dependencies.
+
+The Competition
+---------------
+Recently I stumbled upon [gumtree](https://github.com/jrfaller/gumtree) which looks like a nice tool as well that also features an implementation of ChangeDistiller. If ChangeNodes does not do what you want it to do you may want to check it out.
