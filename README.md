@@ -23,9 +23,14 @@ We mainly use ChangeNodes in Clojure. You somehow need to get two AST nodes (typ
     (.difference diff)
     (.getOperations diff)
     
-ChangeNodes is meant to be used with QwalKeko, a history querying tool that reasons over projects stored in git. You can find it [here](https://github.com/ReinoutStevens/damp.qwalkeko). Examples can be found [here](https://github.com/ReinoutStevens/damp.qwalkeko/blob/master/src/qwalkeko/clj/changenodes.clj) and [here](https://github.com/ReinoutStevens/damp.qwalkeko/blob/master/src/qwalkeko/experiments/selenium.clj).
+ChangeNodes is meant to be used with QwalKeko, a history querying tool that reasons over projects stored in git. You can find it [here](https://github.com/ReinoutStevens/damp.qwalkeko). Examples can be found [here](https://github.com/ReinoutStevens/damp.qwalkeko/blob/master/damp.qwalkeko.plugin/src/qwalkeko/clj/changenodes.clj) and [here](https://github.com/ReinoutStevens/damp.qwalkeko/blob/master/damp.qwalkeko.plugin/src/qwalkeko/experiments/selenium.clj).
 
+Inside the [clojure layer](https://github.com/ReinoutStevens/damp.qwalkeko/blob/master/damp.qwalkeko.plugin/src/qwalkeko/clj/changenodes.clj) you also find code that normalizes changes to more easily work with them.
 
 Installation
 ------------
 ChangeNodes is configured to be an Eclipse plugin. Installation is done by cloning this repository and importing it as a new Eclipse project. It includes all of its dependencies.
+
+The Competition
+---------------
+Recently I stumbled upon [gumtree](https://github.com/jrfaller/gumtree) which looks like a nice tool. It also features an implementation of ChangeDistiller. If ChangeNodes does not do what you want it to do you may want to check it out.
