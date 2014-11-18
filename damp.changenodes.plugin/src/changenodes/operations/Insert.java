@@ -1,9 +1,14 @@
 package changenodes.operations;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ChildPropertyDescriptor;
+import org.eclipse.jdt.core.dom.SimplePropertyDescriptor;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
 public class Insert implements IOperation {
@@ -55,8 +60,28 @@ public class Insert implements IOperation {
 	}
 	
 	
-	public ASTNode apply(){
+	@Override
+	public ASTNode apply() {
 		ASTNode copy = ASTNode.copySubtree(leftParent.getAST(), rightNode);
+		for (Iterator iterator = copy.structuralPropertiesForType().iterator(); iterator.hasNext();) {
+			StructuralPropertyDescriptor prop = (StructuralPropertyDescriptor) iterator.next();
+			if(prop.isChildProperty()){
+				ChildPropertyDescriptor cprop = (ChildPropertyDescriptor) prop;
+				if(!cprop.isMandatory()){
+					copy.setStructuralProperty(prop, null);
+				}
+			}
+			else if(prop.isSimpleProperty()){
+				SimplePropertyDescriptor cprop = (SimplePropertyDescriptor) prop;
+				if(!cprop.isMandatory()){
+					copy.setStructuralProperty(prop, null);
+				}
+			}
+			else if(prop.isChildListProperty()){
+				Collection<ASTNode> nodes = (Collection<ASTNode>) copy.getStructuralProperty(prop);
+				nodes.clear();
+			} 
+		}
 		if(property.isChildListProperty()){
 			List<ASTNode> nodes = (List<ASTNode>) leftParent.getStructuralProperty(property);
 			nodes.add(index, copy);
@@ -70,4 +95,18 @@ public class Insert implements IOperation {
 		return "Insert " + rightNode.toString();
 	}
 	
+	public Collection<ASTNode> mandatoryNodes(){
+		Collection<ASTNode> result = new ArrayList<ASTNode>();
+		for (Iterator iterator = original.structuralPropertiesForType().iterator(); iterator.hasNext();) {
+			StructuralPropertyDescriptor prop = (StructuralPropertyDescriptor) iterator.next();
+			if(prop.isChildProperty()){
+				ChildPropertyDescriptor cprop = (ChildPropertyDescriptor) prop;
+				if(cprop.isMandatory()){
+					ASTNode node = (ASTNode) original.getStructuralProperty(cprop);
+					result.add(node);
+				}
+			}
+		}
+		return result;
+	}
 }

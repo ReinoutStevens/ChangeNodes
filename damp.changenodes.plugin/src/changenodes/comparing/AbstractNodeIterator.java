@@ -2,16 +2,13 @@ package changenodes.comparing;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Stack;
+
 
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ChildListPropertyDescriptor;
-import org.eclipse.jdt.core.dom.ChildPropertyDescriptor;
-import org.eclipse.jdt.core.dom.SimplePropertyDescriptor;
+
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
-public abstract class AbstractNodeIterator implements Iterator<ASTNode>{
+public abstract class AbstractNodeIterator implements Iterator<ASTNode>, Iterable<ASTNode>{
 
 
 	@Override
@@ -38,6 +35,10 @@ public abstract class AbstractNodeIterator implements Iterator<ASTNode>{
 		return top;
 	}
 	
+	
+	public Iterator<ASTNode> iterator(){
+		return this;
+	}
 	
 	private void processProperty(StructuralPropertyDescriptor prop, Object value){
 		if(prop.isSimpleProperty()){
@@ -73,6 +74,4 @@ public abstract class AbstractNodeIterator implements Iterator<ASTNode>{
 		assert(prop.isSimpleProperty());
 		//nothing
 	}
-	
-
 }

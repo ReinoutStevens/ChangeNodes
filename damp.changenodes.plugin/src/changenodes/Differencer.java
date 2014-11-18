@@ -85,7 +85,7 @@ public class Differencer implements IDifferencer {
 			if(NodeClassifier.isComment(current)){
 				continue;
 			}
-			if(parent != null){ //we are not working on the root
+			if(parent != right.getParent()){ //we are not working on the root
 				ASTNode currentPartner = rightMatchingPrime.get(current);
 				ASTNode parentPartner = rightMatchingPrime.get(parent); 
 				if(currentPartner == null){ //if x has no partner in M'
@@ -181,7 +181,7 @@ public class Differencer implements IDifferencer {
 		ASTNode newNode = insert.apply();
 		leftMatchingPrime.put(newNode, current);
 		rightMatchingPrime.put(current, newNode);
-		//insertChildren(newNode, current);
+		insertChildren(newNode, current);
 		addOperation(insert);
 		return insert;
 	}
@@ -206,10 +206,10 @@ public class Differencer implements IDifferencer {
 				if(prop.isChildProperty()){
 					ASTNode lNode = (ASTNode) lValue;
 					ASTNode rNode = (ASTNode) rValue;
-					//Insert insert = new Insert(getOriginal(newNode), newNode,otherNode,rNode, prop, -1);
+					Insert insert = new Insert(getOriginal(newNode), newNode,otherNode,rNode, prop, -1);
 					leftMatchingPrime.put(lNode, rNode);
 					rightMatchingPrime.put(rNode,lNode);
-					//addOperation(insert);
+					addOperation(insert);
 					insertChildren(lNode, rNode);
 				} else if(prop.isChildListProperty()){
 					List<ASTNode> lChildren = (List<ASTNode>) lValue;
@@ -291,7 +291,7 @@ public class Differencer implements IDifferencer {
 		if(prop.isChildListProperty()){
 			position = findPosition(rightNode);
 		} 
-		move = new Move(getOriginal(node), node, newParent, prop, position);
+		move = new Move(getOriginal(node), node, newParent, rightNode, prop, position);
 		addOperation(move);
 		move.apply();
 	}
@@ -483,6 +483,9 @@ public class Differencer implements IDifferencer {
 	private ASTNode getOriginal(ASTNode copy){
 		assert(mapCopyToOriginal != null);
 		ASTNode result = mapCopyToOriginal.get(copy);
+		if(!mapCopyToOriginal.containsKey(copy)){
+			return null;
+		}
 		return result;
 	}
 }

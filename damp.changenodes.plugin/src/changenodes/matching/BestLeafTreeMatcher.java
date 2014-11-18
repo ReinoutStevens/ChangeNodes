@@ -127,13 +127,20 @@ public class BestLeafTreeMatcher implements IMatcher {
     	return this.rightMatching;
     }
 
-    public void match(ASTNode left, ASTNode right) {
+    public void match(ASTNode left, ASTNode right) throws MatchingException {
         List<LeafPair> matchedLeafs = matchLeaves(left, right);
         // sort matching set according to similarity in descending order
         Collections.sort(matchedLeafs);
         matchIdenticalMethods(left, right);
         markMatchedLeaves(matchedLeafs);
         matchNodes(left, right);
+        //both roots need to match
+        //we should introduce a fake node
+        if(left.getNodeType() != right.getNodeType()){
+        	throw new UnmatchingRootsException(left, right);
+        }
+        leftMatching.put(left,right);
+        rightMatching.put(right, left);
     }
 
   

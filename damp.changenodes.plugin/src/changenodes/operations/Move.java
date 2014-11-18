@@ -12,15 +12,17 @@ public class Move implements IOperation {
 	ASTNode original;
 	ASTNode newParent;
 	ASTNode leftNode;
+	ASTNode rightNode;
 	StructuralPropertyDescriptor property;
 	int index;
 	
-	public Move(ASTNode original, ASTNode node, ASTNode newParent, StructuralPropertyDescriptor property, int index){
+	public Move(ASTNode original, ASTNode node, ASTNode newParent, ASTNode rightNode, StructuralPropertyDescriptor property, int index){
 		this.original = original;
 		this.newParent = newParent;
 		this.leftNode = node;
 		this.property = property;
 		this.index = index;
+		this.rightNode = rightNode;
 	}
 
 	public ASTNode getOriginal() {
@@ -39,8 +41,12 @@ public class Move implements IOperation {
 		return leftNode;
 	}
 	
+	public ASTNode getRightNode(){
+		return rightNode;
+	}
+	
 	public Move setAffectedNode(ASTNode node){
-		return new Move(original, node, newParent, property, index);
+		return new Move(original, node, newParent, rightNode, property, index);
 	}
 
 	public StructuralPropertyDescriptor getProperty() {
