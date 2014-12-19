@@ -1,5 +1,6 @@
 package changenodes.operations;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -11,10 +12,12 @@ public class Delete implements IOperation {
 
 	ASTNode leftNode;
 	ASTNode original;
+	int index;
 	
 	public Delete(ASTNode original, ASTNode leftNode){
 		this.leftNode = leftNode;
 		this.original = original;
+		this.index = calculateIndex(leftNode);
 	}
 	
 	public ASTNode getOriginal() {
@@ -55,6 +58,13 @@ public class Delete implements IOperation {
 		return "Delete: " + original.toString();
 	}
 	
+	public int getIndex(){
+		return index;
+	}
+	
+	public int getOriginalIndex(){
+		return calculateIndex(original);
+	}
 	
 	private boolean alreadyDeleted(){
 		ASTNode current = leftNode;
@@ -64,5 +74,16 @@ public class Delete implements IOperation {
 			parent = current.getParent();
 		}
 		return !(current instanceof CompilationUnit);
+	}
+	
+
+	private int calculateIndex(ASTNode node){
+		StructuralPropertyDescriptor prop = node.getLocationInParent();
+		if(prop.isChildListProperty()){
+			List<ASTNode> nodes = (List<ASTNode>) node.getParent().getStructuralProperty(prop);
+			return nodes.indexOf(node);
+		} else {
+			return -1;
+		}
 	}
 }

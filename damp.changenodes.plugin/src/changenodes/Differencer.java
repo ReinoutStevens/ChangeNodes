@@ -386,6 +386,7 @@ public class Differencer implements IDifferencer {
 		}
 	}
 	
+	//BUG: probably a bug here as we do not follow the paper 100%...
 	private int findPosition(ASTNode node){
 		StructuralPropertyDescriptor property = node.getLocationInParent();
 		ASTNode parent = node.getParent();
@@ -393,9 +394,9 @@ public class Differencer implements IDifferencer {
 		List<ASTNode> children = (List<ASTNode>) parent.getStructuralProperty(property);
 		
 		ASTNode previousSibling = getPreviousSibling(node, children);
-		while(previousSibling != null && outOfOrder.contains(previousSibling)){
-			previousSibling = getPreviousSibling(previousSibling, children);
-		}
+		//while(previousSibling != null && outOfOrder.contains(previousSibling)){
+		//	previousSibling = getPreviousSibling(previousSibling, children);
+		//}
         // x is the leftmost child of y that is marked "in order"
 		if(previousSibling == null){
 			return 0;
