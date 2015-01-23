@@ -163,7 +163,7 @@ public class Differencer implements IDifferencer {
 				Object leftObj = left.getStructuralProperty(prop);
 				Object rightObj = right.getStructuralProperty(prop);
 				if(leftObj == null && rightObj == null){
-					return;
+					continue;
 				}
 				if((leftObj == null && rightObj != null) || 
 						(leftObj != null && rightObj == null) || 
