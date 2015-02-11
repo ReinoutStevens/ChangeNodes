@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -11,7 +12,9 @@ import org.eclipse.jdt.core.dom.ChildPropertyDescriptor;
 import org.eclipse.jdt.core.dom.SimplePropertyDescriptor;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
-public class Insert implements IOperation {
+import changenodes.matching.NodeClassifier;
+
+public class Insert extends Operation implements IOperation {
 
 	ASTNode original;
 	ASTNode leftParent;
@@ -61,32 +64,44 @@ public class Insert implements IOperation {
 	
 	
 	@Override
-	public ASTNode apply() {
+	public ASTNode apply(Map<ASTNode, ASTNode> leftMatching, Map<ASTNode, ASTNode> rightMatching) {
 		ASTNode copy = ASTNode.copySubtree(leftParent.getAST(), rightNode);
-		for (Iterator iterator = copy.structuralPropertiesForType().iterator(); iterator.hasNext();) {
-			StructuralPropertyDescriptor prop = (StructuralPropertyDescriptor) iterator.next();
-			if(prop.isChildProperty()){
-				ChildPropertyDescriptor cprop = (ChildPropertyDescriptor) prop;
-				if(!cprop.isMandatory()){
-					copy.setStructuralProperty(prop, null);
-				}
+		if(NodeClassifier.isLeafStatement(copy)){
+			if(property.isChildListProperty()){
+				List<ASTNode> nodes = (List<ASTNode>) leftParent.getStructuralProperty(property);
+				nodes.add(index, copy);
+			} else {
+				leftParent.setStructuralProperty(property, copy);
 			}
-			else if(prop.isSimpleProperty()){
-				SimplePropertyDescriptor cprop = (SimplePropertyDescriptor) prop;
-				if(!cprop.isMandatory()){
-					copy.setStructuralProperty(prop, null);
-				}
-			}
-			else if(prop.isChildListProperty()){
-				Collection<ASTNode> nodes = (Collection<ASTNode>) copy.getStructuralProperty(prop);
-				nodes.clear();
-			} 
-		}
-		if(property.isChildListProperty()){
-			List<ASTNode> nodes = (List<ASTNode>) leftParent.getStructuralProperty(property);
-			nodes.add(index, copy);
+			addSubtreeMatching(leftMatching, rightMatching, copy, rightNode);
 		} else {
-			leftParent.setStructuralProperty(property, copy);
+			for (Iterator iterator = copy.structuralPropertiesForType().iterator(); iterator.hasNext();) {
+				StructuralPropertyDescriptor prop = (StructuralPropertyDescriptor) iterator.next();
+				if(prop.isChildProperty()){
+					ChildPropertyDescriptor cprop = (ChildPropertyDescriptor) prop;
+					if(!cprop.isMandatory()){
+						copy.setStructuralProperty(prop, null);
+					}
+				}
+				else if(prop.isSimpleProperty()){
+					SimplePropertyDescriptor cprop = (SimplePropertyDescriptor) prop;
+					if(!cprop.isMandatory()){
+						copy.setStructuralProperty(prop, null);
+					}
+				}
+				else if(prop.isChildListProperty()){
+					Collection<ASTNode> nodes = (Collection<ASTNode>) copy.getStructuralProperty(prop);
+					nodes.clear();
+				} 
+			}
+			if(property.isChildListProperty()){
+				List<ASTNode> nodes = (List<ASTNode>) leftParent.getStructuralProperty(property);
+				nodes.add(index, copy);
+			} else {
+				leftParent.setStructuralProperty(property, copy);
+			}
+			leftMatching.put(copy, rightNode);
+			rightMatching.put(rightNode, copy);
 		}
 		return copy;
 	}

@@ -111,9 +111,7 @@ public class Differencer implements IDifferencer {
 						if(shouldUpdate){
 							Update update = new Update(getOriginal(parentPartner), parentPartner, parent, prop);
 							operation = update;
-							update.apply();
-							//both nodes should be equal now
-							addSubtreeMatching((ASTNode) update.leftValue(), current);
+							Object o = update.apply(leftMatchingPrime, rightMatchingPrime);
 							addOperation(operation);
 						} else {
 							if(prop.isChildProperty()){ //these 2 are equal but dont match, lets match them
@@ -131,7 +129,6 @@ public class Differencer implements IDifferencer {
 						assert(!leftMatchingPrime.get(partnerParent).equals(parent));
 						ASTNode newParent = rightMatchingPrime.get(parent);
 						move(currentPartner, partnerParent, newParent, current, parent);
-						
 					}
 				}
 			}
@@ -170,7 +167,7 @@ public class Differencer implements IDifferencer {
 						!left.getStructuralProperty(prop).equals(right.getStructuralProperty(prop))){
 					Update update = new Update(getOriginal(left), left, right, prop);
 					addOperation(update);
-					update.apply();
+					update.apply(leftMatchingPrime, rightMatchingPrime);
 				}
 			}
 		}
@@ -178,10 +175,8 @@ public class Differencer implements IDifferencer {
 	
 	private Insert insert(ASTNode parentPartner, ASTNode parent,ASTNode current,StructuralPropertyDescriptor prop,int index){
 		Insert insert = new Insert(getOriginal(parentPartner), parentPartner, parent, current, prop, index);
-		ASTNode newNode = insert.apply();
-		leftMatchingPrime.put(newNode, current);
-		rightMatchingPrime.put(current, newNode);
-		insertChildren(newNode, current);
+		ASTNode newNode = insert.apply(leftMatchingPrime, rightMatchingPrime);
+		//insertChildren(newNode, current);
 		addOperation(insert);
 		return insert;
 	}
@@ -292,8 +287,9 @@ public class Differencer implements IDifferencer {
 			position = findPosition(rightNode);
 		} 
 		move = new Move(getOriginal(node), node, newParent, rightNode, prop, position);
+		move.apply(leftMatchingPrime, rightMatchingPrime);
 		addOperation(move);
-		move.apply();
+		
 	}
 	
 	
@@ -320,6 +316,8 @@ public class Differencer implements IDifferencer {
 					}
 				}
 				if(!parentAlreadyDeleted){
+					ASTNode original = getOriginal(node);
+					
 					Delete delete = new Delete(getOriginal(node), node);
 					deletes.add(delete);
 				}
@@ -328,9 +326,16 @@ public class Differencer implements IDifferencer {
 		//apply deletes (so not to mess up our iterator)
 		//deletes can probably be cleaner by deleting just the parent node and not the parent node + all children
 		for(Delete delete : deletes){
-			delete.apply();
+			delete.apply(leftMatchingPrime, rightMatchingPrime);
 		}
-		operations.addAll(deletes);
+		//moves of mandatory nodes result in newly temporarily added pieces in the left AST
+		//these do not have an original node, as they are newly added (and should also be removed as they are 'mandatory')
+		//we apply them but dont output them since they are not needed
+		for(Delete d : deletes){
+			if(d.getOriginal() != null){
+				operations.add(d);
+			}
+		};
 	}
 	
 	

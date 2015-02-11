@@ -2,13 +2,14 @@ package changenodes.operations;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ChildPropertyDescriptor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
-public class Delete implements IOperation {
+public class Delete extends Operation implements IOperation {
 
 	ASTNode leftNode;
 	ASTNode original;
@@ -32,7 +33,7 @@ public class Delete implements IOperation {
 		return new Delete(original, node);
 	}
 	
-	public ASTNode apply(){
+	public ASTNode apply(Map<ASTNode, ASTNode> leftMatching, Map<ASTNode, ASTNode> rightMatching){
 		/*StructuralPropertyDescriptor prop = leftNode.getLocationInParent();
 		ASTNode parent = leftNode.getParent();
 		if(prop.isChildListProperty()){

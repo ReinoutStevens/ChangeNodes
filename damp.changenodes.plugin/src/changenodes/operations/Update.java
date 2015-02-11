@@ -1,10 +1,19 @@
 package changenodes.operations;
 
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ChildPropertyDescriptor;
+import org.eclipse.jdt.core.dom.SimplePropertyDescriptor;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
-public class Update implements IOperation {
+import changenodes.matching.NodeClassifier;
+
+public class Update  extends Operation implements IOperation {
 
 	private ASTNode original;
 	private ASTNode rightParent, leftParent;
@@ -52,20 +61,51 @@ public class Update implements IOperation {
 		return new Update(original, node, rightParent, property);
 	}
 	
-	public ASTNode apply(){
+	public ASTNode apply(Map<ASTNode, ASTNode> leftMatching, Map<ASTNode, ASTNode> rightMatching){
 		if(property.isSimpleProperty()){
 			Object value = rightParent.getStructuralProperty(property);
 			leftParent.setStructuralProperty(property, value);
 		} else {
 			ASTNode node = (ASTNode) rightParent.getStructuralProperty(property);
-			ASTNode value = ASTNode.copySubtree(leftParent.getAST(), node);
-			leftParent.setStructuralProperty(property, value);
+			ASTNode copy = ASTNode.copySubtree(leftParent.getAST(), node);
+			if(NodeClassifier.isLeafStatement(copy)){
+				leftParent.setStructuralProperty(property, copy);
+				addSubtreeMatching(leftMatching, rightMatching, copy, node);
+			} else {
+				for (Iterator iterator = copy.structuralPropertiesForType().iterator(); iterator.hasNext();) {
+					StructuralPropertyDescriptor prop = (StructuralPropertyDescriptor) iterator.next();
+					if(prop.isChildProperty()){
+						ChildPropertyDescriptor cprop = (ChildPropertyDescriptor) prop;
+						if(!cprop.isMandatory()){
+							copy.setStructuralProperty(prop, null);
+						}
+					}
+					else if(prop.isSimpleProperty()){
+						SimplePropertyDescriptor cprop = (SimplePropertyDescriptor) prop;
+						if(!cprop.isMandatory()){
+							copy.setStructuralProperty(prop, null);
+						}
+					}
+					else if(prop.isChildListProperty()){
+						//shouldnt be possible
+						assert(false);
+					} 
+				}
+				if(property.isChildListProperty()){
+					//should not happen
+					assert(false);
+				} else {
+					leftParent.setStructuralProperty(property, copy);
+				}
+			}
+			leftMatching.put(copy, node);
+			rightMatching.put(node, copy);
 		}
+		
 		return leftParent;
 	}
 	
 	public String toString(){
 		return "Update: " + original + " " + property.toString();
 	}
-
 }

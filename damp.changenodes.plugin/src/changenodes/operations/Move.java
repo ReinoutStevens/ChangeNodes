@@ -1,13 +1,16 @@
 package changenodes.operations;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ChildPropertyDescriptor;
+import org.eclipse.jdt.core.dom.SimplePropertyDescriptor;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 
-public class Move implements IOperation {
+public class Move extends Operation implements IOperation {
 
 	ASTNode original;
 	ASTNode newParent;
@@ -57,13 +60,13 @@ public class Move implements IOperation {
 		return index;
 	}
 	
-	public ASTNode apply(){
+	public ASTNode apply(Map<ASTNode, ASTNode> leftMatching, Map<ASTNode, ASTNode> rightMatching){
 		boolean unparent = true;
 		StructuralPropertyDescriptor prop = leftNode.getLocationInParent();
 		if(prop != null){
 			if(prop.isChildProperty()){
-			ChildPropertyDescriptor childprop = (ChildPropertyDescriptor) prop;
-			unparent = !childprop.isMandatory();
+				ChildPropertyDescriptor childprop = (ChildPropertyDescriptor) prop;
+				unparent = !childprop.isMandatory();
 			}
 		}
 		if(!unparent){
@@ -79,6 +82,33 @@ public class Move implements IOperation {
 			coll.add(index, leftNode);
 		} else {
 			newParent.setStructuralProperty(property, leftNode);
+		}
+		//clean up the node so that only mandatory properties remain
+		ASTNode newNode;
+		if(property.isChildListProperty()){
+			List<ASTNode> nodes = (List<ASTNode>) newParent.getStructuralProperty(property);
+			newNode = nodes.get(index);
+		} else {
+			newNode = (ASTNode) newParent.getStructuralProperty(property);
+		}
+		for (Iterator iterator = newNode.structuralPropertiesForType().iterator(); iterator.hasNext();) {
+			prop = (StructuralPropertyDescriptor) iterator.next();
+			if(prop.isChildProperty()){
+				ChildPropertyDescriptor cprop = (ChildPropertyDescriptor) prop;
+				if(!cprop.isMandatory()){
+					newNode.setStructuralProperty(prop, null);
+				}
+			}
+			else if(prop.isSimpleProperty()){
+				SimplePropertyDescriptor cprop = (SimplePropertyDescriptor) prop;
+				if(!cprop.isMandatory()){
+					newNode.setStructuralProperty(prop, null);
+				}
+			}
+			else if(prop.isChildListProperty()){
+				Collection<ASTNode> nodes = (Collection<ASTNode>) newNode.getStructuralProperty(prop);
+				nodes.clear();
+			} 
 		}
 		return leftNode;
 	}
