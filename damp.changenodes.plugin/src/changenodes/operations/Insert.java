@@ -75,25 +75,7 @@ public class Insert extends Operation implements IOperation {
 			}
 			addSubtreeMatching(leftMatching, rightMatching, copy, rightNode);
 		} else {
-			for (Iterator iterator = copy.structuralPropertiesForType().iterator(); iterator.hasNext();) {
-				StructuralPropertyDescriptor prop = (StructuralPropertyDescriptor) iterator.next();
-				if(prop.isChildProperty()){
-					ChildPropertyDescriptor cprop = (ChildPropertyDescriptor) prop;
-					if(!cprop.isMandatory()){
-						copy.setStructuralProperty(prop, null);
-					}
-				}
-				else if(prop.isSimpleProperty()){
-					SimplePropertyDescriptor cprop = (SimplePropertyDescriptor) prop;
-					if(!cprop.isMandatory()){
-						copy.setStructuralProperty(prop, null);
-					}
-				}
-				else if(prop.isChildListProperty()){
-					Collection<ASTNode> nodes = (Collection<ASTNode>) copy.getStructuralProperty(prop);
-					nodes.clear();
-				} 
-			}
+			minimizeNode(copy);
 			if(property.isChildListProperty()){
 				List<ASTNode> nodes = (List<ASTNode>) leftParent.getStructuralProperty(property);
 				nodes.add(index, copy);

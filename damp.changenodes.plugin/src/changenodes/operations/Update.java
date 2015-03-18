@@ -72,25 +72,7 @@ public class Update  extends Operation implements IOperation {
 				leftParent.setStructuralProperty(property, copy);
 				addSubtreeMatching(leftMatching, rightMatching, copy, node);
 			} else {
-				for (Iterator iterator = copy.structuralPropertiesForType().iterator(); iterator.hasNext();) {
-					StructuralPropertyDescriptor prop = (StructuralPropertyDescriptor) iterator.next();
-					if(prop.isChildProperty()){
-						ChildPropertyDescriptor cprop = (ChildPropertyDescriptor) prop;
-						if(!cprop.isMandatory()){
-							copy.setStructuralProperty(prop, null);
-						}
-					}
-					else if(prop.isSimpleProperty()){
-						SimplePropertyDescriptor cprop = (SimplePropertyDescriptor) prop;
-						if(!cprop.isMandatory()){
-							copy.setStructuralProperty(prop, null);
-						}
-					}
-					else if(prop.isChildListProperty()){
-						//shouldnt be possible
-						assert(false);
-					} 
-				}
+				minimizeNode(copy);
 				if(property.isChildListProperty()){
 					//should not happen
 					assert(false);

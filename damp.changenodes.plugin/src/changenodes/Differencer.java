@@ -61,6 +61,27 @@ public class Differencer implements IDifferencer {
 		return right;
 	}
 	
+	public Map<ASTNode, ASTNode> getLeftMatching(){
+		return leftMatching;
+	}
+	
+	public Map<ASTNode, ASTNode> getRightMatching(){
+		return rightMatching;
+	}
+	
+	public Map<ASTNode, ASTNode> getLeftMatchingPrime(){
+		return leftMatchingPrime;
+	}
+	
+	public Map<ASTNode, ASTNode> getRightMatchingPrime(){
+		return rightMatchingPrime;
+	}
+	
+	public Map<ASTNode, ASTNode> getCopyToOriginal(){
+		return mapCopyToOriginal;
+	}
+	
+	
 	@Override
 	public void difference() throws MatchingException {
 		mapCopyToOriginal = matchOriginalAndCopy();
@@ -128,6 +149,8 @@ public class Differencer implements IDifferencer {
 					if(!rightMatchingPrime.get(parent).equals(partnerParent)){
 						assert(!leftMatchingPrime.get(partnerParent).equals(parent));
 						ASTNode newParent = rightMatchingPrime.get(parent);
+						ASTNode test = leftMatchingPrime.get(newParent);
+						assert(parent.equals(test));
 						move(currentPartner, partnerParent, newParent, current, parent);
 					}
 				}

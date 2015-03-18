@@ -63,20 +63,47 @@ public class Move extends Operation implements IOperation {
 	public ASTNode apply(Map<ASTNode, ASTNode> leftMatching, Map<ASTNode, ASTNode> rightMatching){
 		boolean unparent = true;
 		StructuralPropertyDescriptor prop = leftNode.getLocationInParent();
-		if(prop != null){
-			if(prop.isChildProperty()){
-				ChildPropertyDescriptor childprop = (ChildPropertyDescriptor) prop;
-				unparent = !childprop.isMandatory();
+		ASTNode copy = ASTNode.copySubtree(leftNode.getAST(), leftNode);
+		minimizeNode(copy);
+		//copy the ASTNodes from leftNode to copy so these still have a parent
+		for (Iterator iterator = copy.structuralPropertiesForType().iterator(); iterator.hasNext();) {
+			StructuralPropertyDescriptor cprop = (StructuralPropertyDescriptor) iterator.next();
+			if(cprop.isChildListProperty()){
+				List<ASTNode> values = (List<ASTNode>) leftNode.getStructuralProperty(cprop);
+				List<ASTNode> target = (List<ASTNode>) copy.getStructuralProperty(cprop);
+				while(!values.isEmpty()){
+					ASTNode n = values.get(0);
+					n.delete();
+					target.add(n);
+				}
+			} else if (cprop.isChildProperty()){
+				ASTNode value = (ASTNode) leftNode.getStructuralProperty(cprop);
+				ASTNode vcopy = ASTNode.copySubtree(leftNode.getAST(), value);
+				leftNode.setStructuralProperty(cprop, vcopy);
+				copy.setStructuralProperty(cprop, value);
+			} else {
+				Object value = leftNode.getStructuralProperty(cprop);
+				copy.setStructuralProperty(cprop, value);
 			}
 		}
-		if(!unparent){
-			//node that is mandatory in its parent but that will be moved
-			//hopefully either the parent is deleted in a later stage, or another node is moved to this location
-			//may not be correct though...
-			ASTNode copy = ASTNode.copySubtree(leftNode.getAST(), leftNode);
+		//install copy in the left ast
+		if(prop.isChildListProperty()){
+			List<ASTNode> nodes = (List<ASTNode>) leftNode.getParent().getStructuralProperty(prop);
+			int idx = 0;
+			for(ASTNode n : nodes){
+				if(n == leftNode){
+					break;
+				}
+				idx++;
+			}
+			nodes.add(idx,copy);
+		} else {
 			leftNode.getParent().setStructuralProperty(prop, copy);
 		}
+		//shouldnt do anything as node is unparented in step above
 		leftNode.delete();
+		
+		//move left node
 		if(property.isChildListProperty()){
 			List<ASTNode> coll = (List<ASTNode>) newParent.getStructuralProperty(property);
 			coll.add(index, leftNode);
@@ -84,32 +111,16 @@ public class Move extends Operation implements IOperation {
 			newParent.setStructuralProperty(property, leftNode);
 		}
 		//clean up the node so that only mandatory properties remain
+		
+		/*
 		ASTNode newNode;
 		if(property.isChildListProperty()){
 			List<ASTNode> nodes = (List<ASTNode>) newParent.getStructuralProperty(property);
 			newNode = nodes.get(index);
 		} else {
 			newNode = (ASTNode) newParent.getStructuralProperty(property);
-		}
-		for (Iterator iterator = newNode.structuralPropertiesForType().iterator(); iterator.hasNext();) {
-			prop = (StructuralPropertyDescriptor) iterator.next();
-			if(prop.isChildProperty()){
-				ChildPropertyDescriptor cprop = (ChildPropertyDescriptor) prop;
-				if(!cprop.isMandatory()){
-					newNode.setStructuralProperty(prop, null);
-				}
-			}
-			else if(prop.isSimpleProperty()){
-				SimplePropertyDescriptor cprop = (SimplePropertyDescriptor) prop;
-				if(!cprop.isMandatory()){
-					newNode.setStructuralProperty(prop, null);
-				}
-			}
-			else if(prop.isChildListProperty()){
-				Collection<ASTNode> nodes = (Collection<ASTNode>) newNode.getStructuralProperty(prop);
-				nodes.clear();
-			} 
-		}
+		}*/
+		minimizeNode(leftNode);
 		return leftNode;
 	}
 	
