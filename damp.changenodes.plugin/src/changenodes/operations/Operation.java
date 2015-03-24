@@ -21,9 +21,12 @@ public abstract class Operation implements IOperation {
 		for (Iterator iterator = left.structuralPropertiesForType().iterator(); iterator.hasNext();) {
 			StructuralPropertyDescriptor prop = (StructuralPropertyDescriptor) iterator.next();
 			if(prop.isChildProperty()){
-				ASTNode leftNode = (ASTNode) left.getStructuralProperty(prop);
-				ASTNode rightNode = (ASTNode) right.getStructuralProperty(prop);
-				addSubtreeMatching(leftMatching, rightMatching, leftNode, rightNode);
+				if(((ChildPropertyDescriptor) prop).isMandatory()){
+					ASTNode leftNode = (ASTNode) left.getStructuralProperty(prop);
+					ASTNode rightNode = (ASTNode) right.getStructuralProperty(prop);
+					addSubtreeMatching(leftMatching, rightMatching, leftNode, rightNode);
+				}
+				
 			} else if(prop.isChildListProperty()){
 				List<ASTNode> leftNodes = (List<ASTNode>) left.getStructuralProperty(prop);
 				List<ASTNode> rightNodes = (List<ASTNode>) right.getStructuralProperty(prop);
