@@ -130,10 +130,14 @@ public class Differencer implements IDifferencer {
 							shouldUpdate = !parentValue.toString().equals(parentPartnerValue.toString());
 						}
 						if(shouldUpdate){
-							Update update = new Update(getOriginal(parentPartner), parentPartner, parent, prop);
-							operation = update;
-							Object o = update.apply(leftMatchingPrime, rightMatchingPrime);
-							addOperation(operation);
+							if(prop.isSimpleProperty()){
+								Update update = new Update(getOriginal(parentPartner), parentPartner, parent, prop);
+								operation = update;
+								Object o = update.apply(leftMatchingPrime, rightMatchingPrime);
+								addOperation(operation);
+							} else {
+								insert(parentPartner, parent,current,prop,-1);
+							}
 						} else {
 							if(prop.isChildProperty()){ //these 2 are equal but dont match, lets match them
 								leftMatchingPrime.put((ASTNode)parentPartner.getStructuralProperty(prop), current);

@@ -82,6 +82,7 @@ public class Insert extends Operation implements IOperation {
 			} else {
 				leftParent.setStructuralProperty(property, copy);
 			}
+			addSubtreeMatching(leftMatching, rightMatching, copy, rightNode);
 			leftMatching.put(copy, rightNode);
 			rightMatching.put(rightNode, copy);
 		}
