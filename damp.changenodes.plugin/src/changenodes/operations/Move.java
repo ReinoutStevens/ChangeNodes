@@ -87,18 +87,20 @@ public class Move extends Operation implements IOperation {
 			}
 		}
 		//install copy in the left ast
-		if(prop.isChildListProperty()){
-			List<ASTNode> nodes = (List<ASTNode>) leftNode.getParent().getStructuralProperty(prop);
-			int idx = 0;
-			for(ASTNode n : nodes){
-				if(n == leftNode){
-					break;
+		if(prop != null){ //prop can be null in case one of the parents of the AST was modified (eg: Insert of a new Body)
+			if(prop.isChildListProperty()){
+				List<ASTNode> nodes = (List<ASTNode>) leftNode.getParent().getStructuralProperty(prop);
+				int idx = 0;
+				for(ASTNode n : nodes){
+					if(n == leftNode){
+						break;
+					}
+					idx++;
 				}
-				idx++;
+				nodes.add(idx,copy);
+			} else {
+				leftNode.getParent().setStructuralProperty(prop, copy);
 			}
-			nodes.add(idx,copy);
-		} else {
-			leftNode.getParent().setStructuralProperty(prop, copy);
 		}
 		//shouldnt do anything as node is unparented in step above
 		leftNode.delete();
