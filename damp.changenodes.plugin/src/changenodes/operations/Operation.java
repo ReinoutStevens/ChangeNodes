@@ -16,6 +16,10 @@ public abstract class Operation implements IOperation {
 		if(left == null && right == null){
 			return;
 		}
+		if(rightMatching.containsKey(right)){
+			//we are re-inserting a node that already had a match
+			leftMatching.remove(rightMatching.get(right));
+		}
 		leftMatching.put(left, right);
 		rightMatching.put(right, left);
 		for (Iterator iterator = left.structuralPropertiesForType().iterator(); iterator.hasNext();) {
