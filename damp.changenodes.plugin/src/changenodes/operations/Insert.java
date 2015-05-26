@@ -20,6 +20,7 @@ public class Insert extends Operation implements IOperation {
 	ASTNode leftParent;
 	ASTNode rightParent;
 	ASTNode rightNode;
+	ASTNode leftRemoved;
 	int index;
 	StructuralPropertyDescriptor property;
 	
@@ -30,6 +31,10 @@ public class Insert extends Operation implements IOperation {
 		this.rightNode = rightNode;
 		this.property = property;
 		this.index = index;
+		this.leftRemoved = null;
+		if(property.isChildProperty()){
+			this.leftRemoved = (ASTNode) leftParent.getStructuralProperty(property);
+		}
 	}
 	
 	public ASTNode getAffectedNode(){
@@ -51,6 +56,10 @@ public class Insert extends Operation implements IOperation {
 	public ASTNode getRightNode() {
 		return rightNode;
 	}
+	
+	public ASTNode getLeftRemoved() {
+		return leftRemoved;
+	}
 
 	public int getIndex() {
 		if(!property.isChildListProperty())
@@ -66,7 +75,7 @@ public class Insert extends Operation implements IOperation {
 	@Override
 	public ASTNode apply(Map<ASTNode, ASTNode> leftMatching, Map<ASTNode, ASTNode> rightMatching) {
 		ASTNode copy = ASTNode.copySubtree(leftParent.getAST(), rightNode);
-		if(NodeClassifier.isLeafStatement(copy)){
+		/*if(NodeClassifier.isLeafStatement(copy)){
 			if(property.isChildListProperty()){
 				List<ASTNode> nodes = (List<ASTNode>) leftParent.getStructuralProperty(property);
 				nodes.add(index, copy);
@@ -74,7 +83,7 @@ public class Insert extends Operation implements IOperation {
 				leftParent.setStructuralProperty(property, copy);
 			}
 			addSubtreeMatching(leftMatching, rightMatching, copy, rightNode);
-		} else {
+		} else {*/
 			minimizeNode(copy);
 			if(property.isChildListProperty()){
 				List<ASTNode> nodes = (List<ASTNode>) leftParent.getStructuralProperty(property);
@@ -85,7 +94,7 @@ public class Insert extends Operation implements IOperation {
 			addSubtreeMatching(leftMatching, rightMatching, copy, rightNode);
 			leftMatching.put(copy, rightNode);
 			rightMatching.put(rightNode, copy);
-		}
+		//}
 		return copy;
 	}
 	

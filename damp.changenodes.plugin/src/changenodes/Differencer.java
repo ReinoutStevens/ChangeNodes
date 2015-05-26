@@ -102,7 +102,7 @@ public class Differencer implements IDifferencer {
 		for (Iterator<ASTNode> rightBFT = new BreadthFirstNodeIterator(right); rightBFT.hasNext();) {
 			ASTNode current = rightBFT.next();
 			ASTNode parent = current.getParent();
-			if(NodeClassifier.isComment(current)){
+			if(NodeClassifier.isComment(current) || (parent != null && NodeClassifier.isComment(parent))){
 				continue;
 			}
 			if(parent != right.getParent()){ //we are not working on the root
@@ -202,57 +202,9 @@ public class Differencer implements IDifferencer {
 	private Insert insert(ASTNode parentPartner, ASTNode parent,ASTNode current,StructuralPropertyDescriptor prop,int index){
 		Insert insert = new Insert(getOriginal(parentPartner), parentPartner, parent, current, prop, index);
 		ASTNode newNode = insert.apply(leftMatchingPrime, rightMatchingPrime);
-		//insertChildren(newNode, current);
 		addOperation(insert);
 		return insert;
 	}
-	
-	/*
-	 * recursively outputs Insert operations for a newly inserted node
-	 * dont know whether this is actually useful or we should just output the parent node
-	 * note that we will not find corresponding nodes in the left tree
-	 * as we are inserting a bunch of new nodes that also have a newly introduced parent
-	 * 
-	 * Removed calls to this as output was incorrect in case parts of a subtree matched
-	 * but the parent node did not. In this case the parent node would add the children,
-	 * and the matched children would not get moved
-	 */
-	private void insertChildren(ASTNode newNode, ASTNode otherNode){
-		for (Iterator iterator = newNode.structuralPropertiesForType().iterator(); iterator.hasNext();) {
-			StructuralPropertyDescriptor prop = (StructuralPropertyDescriptor) iterator.next();
-			Object lValue, rValue;
-			lValue = newNode.getStructuralProperty(prop);
-			rValue = otherNode.getStructuralProperty(prop);
-			if(lValue != null && rValue != null){
-				if(prop.isChildProperty()){
-					ASTNode lNode = (ASTNode) lValue;
-					ASTNode rNode = (ASTNode) rValue;
-					Insert insert = new Insert(getOriginal(newNode), newNode,otherNode,rNode, prop, -1);
-					leftMatchingPrime.put(lNode, rNode);
-					rightMatchingPrime.put(rNode,lNode);
-					addOperation(insert);
-					insertChildren(lNode, rNode);
-				} else if(prop.isChildListProperty()){
-					List<ASTNode> lChildren = (List<ASTNode>) lValue;
-					List<ASTNode> rChildren = (List<ASTNode>) rValue;
-					for(int i = 0; i < lChildren.size(); ++i){
-						ASTNode lNode = lChildren.get(i);
-						ASTNode rNode = rChildren.get(i);
-						//Insert insert = new Insert(getOriginal(newNode), newNode,otherNode,rNode, prop, i);
-						leftMatchingPrime.put(lNode, rNode);
-						rightMatchingPrime.put(rNode,lNode);
-						//addOperation(insert);
-						insertChildren(lNode, rNode);
-					}
-				} else {
-					//Objects
-					//Update update = new Update(getOriginal(newNode), newNode, otherNode, prop);
-					//addOperation(update);
-				}
-			}
-		}
-	}
-	
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void alignChildren(ASTNode left, ASTNode right){
@@ -313,7 +265,7 @@ public class Differencer implements IDifferencer {
 			position = findPosition(rightNode);
 		} 
 		move = new Move(getOriginal(node), node, newParent, rightNode, prop, position);
-		move.apply(leftMatchingPrime, rightMatchingPrime);
+		ASTNode newNode = move.apply(leftMatchingPrime, rightMatchingPrime);
 		addOperation(move);
 		
 	}

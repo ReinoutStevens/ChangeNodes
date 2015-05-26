@@ -13,28 +13,31 @@ import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 public abstract class Operation implements IOperation {
 
 	protected void addSubtreeMatching(Map<ASTNode, ASTNode> leftMatching, Map<ASTNode, ASTNode> rightMatching, ASTNode left, ASTNode right){
-		if(left == null && right == null){
+		if(left == null){
+			return;
+		}
+		if(left.getNodeType() != right.getNodeType()){
 			return;
 		}
 		if(rightMatching.containsKey(right)){
 			//we are re-inserting a node that already had a match
-			leftMatching.remove(rightMatching.get(right));
+			ASTNode r = rightMatching.get(right);
+			leftMatching.remove(r);
 		}
 		leftMatching.put(left, right);
 		rightMatching.put(right, left);
 		for (Iterator iterator = left.structuralPropertiesForType().iterator(); iterator.hasNext();) {
 			StructuralPropertyDescriptor prop = (StructuralPropertyDescriptor) iterator.next();
 			if(prop.isChildProperty()){
-				if(((ChildPropertyDescriptor) prop).isMandatory()){
+				//if(((ChildPropertyDescriptor) prop).isMandatory()){
 					ASTNode leftNode = (ASTNode) left.getStructuralProperty(prop);
 					ASTNode rightNode = (ASTNode) right.getStructuralProperty(prop);
 					addSubtreeMatching(leftMatching, rightMatching, leftNode, rightNode);
-				}
+				//}
 				
 			} else if(prop.isChildListProperty()){
 				List<ASTNode> leftNodes = (List<ASTNode>) left.getStructuralProperty(prop);
 				List<ASTNode> rightNodes = (List<ASTNode>) right.getStructuralProperty(prop);
-				assert(leftNodes.size() == rightNodes.size());
 				for(int i = 0; i < leftNodes.size(); ++i){
 					addSubtreeMatching(leftMatching, rightMatching, leftNodes.get(i), rightNodes.get(i));
 				}

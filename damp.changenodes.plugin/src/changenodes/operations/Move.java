@@ -16,6 +16,7 @@ public class Move extends Operation implements IOperation {
 	ASTNode newParent;
 	ASTNode leftNode;
 	ASTNode rightNode;
+	ASTNode leftPrimeParent;
 	StructuralPropertyDescriptor property;
 	int index;
 	
@@ -26,6 +27,7 @@ public class Move extends Operation implements IOperation {
 		this.property = property;
 		this.index = index;
 		this.rightNode = rightNode;
+		this.leftPrimeParent = node.getParent();
 	}
 
 	public ASTNode getOriginal() {
@@ -46,6 +48,10 @@ public class Move extends Operation implements IOperation {
 	
 	public ASTNode getRightNode(){
 		return rightNode;
+	}
+	
+	public ASTNode getLeftPrimeParent(){
+		return leftPrimeParent;
 	}
 	
 	public Move setAffectedNode(ASTNode node){
@@ -114,15 +120,8 @@ public class Move extends Operation implements IOperation {
 		}
 		//clean up the node so that only mandatory properties remain
 		
-		/*
-		ASTNode newNode;
-		if(property.isChildListProperty()){
-			List<ASTNode> nodes = (List<ASTNode>) newParent.getStructuralProperty(property);
-			newNode = nodes.get(index);
-		} else {
-			newNode = (ASTNode) newParent.getStructuralProperty(property);
-		}*/
 		minimizeNode(leftNode);
+		addSubtreeMatching(leftMatching, rightMatching, leftNode, rightNode);
 		return leftNode;
 	}
 	
