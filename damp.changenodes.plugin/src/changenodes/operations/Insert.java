@@ -21,6 +21,7 @@ public class Insert extends Operation implements IOperation {
 	ASTNode rightParent;
 	ASTNode rightNode;
 	ASTNode leftRemoved;
+	ASTNode copy;
 	int index;
 	StructuralPropertyDescriptor property;
 	
@@ -60,6 +61,10 @@ public class Insert extends Operation implements IOperation {
 	public ASTNode getLeftRemoved() {
 		return leftRemoved;
 	}
+	
+	public ASTNode getCopy() {
+		return copy;
+	}
 
 	public int getIndex() {
 		if(!property.isChildListProperty())
@@ -74,7 +79,7 @@ public class Insert extends Operation implements IOperation {
 	
 	@Override
 	public ASTNode apply(Map<ASTNode, ASTNode> leftMatching, Map<ASTNode, ASTNode> rightMatching) {
-		ASTNode copy = ASTNode.copySubtree(leftParent.getAST(), rightNode);
+		copy = ASTNode.copySubtree(leftParent.getAST(), rightNode);
 		/*if(NodeClassifier.isLeafStatement(copy)){
 			if(property.isChildListProperty()){
 				List<ASTNode> nodes = (List<ASTNode>) leftParent.getStructuralProperty(property);
