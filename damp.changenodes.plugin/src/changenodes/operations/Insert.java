@@ -89,17 +89,41 @@ public class Insert extends Operation implements IOperation {
 			}
 			addSubtreeMatching(leftMatching, rightMatching, copy, rightNode);
 		} else {*/
-			minimizeNode(copy);
-			if(property.isChildListProperty()){
-				List<ASTNode> nodes = (List<ASTNode>) leftParent.getStructuralProperty(property);
-				nodes.add(index, copy);
-			} else {
-				leftParent.setStructuralProperty(property, copy);
-			}
-			addSubtreeMatching(leftMatching, rightMatching, copy, rightNode);
-			leftMatching.put(copy, rightNode);
-			rightMatching.put(rightNode, copy);
+		minimizeNode(copy);
+		if(property.isChildListProperty()){
+			List<ASTNode> nodes = (List<ASTNode>) leftParent.getStructuralProperty(property);
+			nodes.add(index, copy);
+		} else {
+			leftParent.setStructuralProperty(property, copy);
+		}
+		addSubtreeMatching(leftMatching, rightMatching, copy, rightNode);
+		leftMatching.put(copy, rightNode);
+		rightMatching.put(rightNode, copy);
 		//}
+		//restore the nodes of leftRemoved, in case they are not needed they will get deleted
+		//cloned from move
+		if(leftRemoved != null){
+			for (Iterator iterator = leftRemoved.structuralPropertiesForType().iterator(); iterator.hasNext();) {
+				StructuralPropertyDescriptor cprop = (StructuralPropertyDescriptor) iterator.next();
+				if(cprop.isChildListProperty()){
+					List<ASTNode> values = (List<ASTNode>) leftRemoved.getStructuralProperty(cprop);
+					List<ASTNode> target = (List<ASTNode>) copy.getStructuralProperty(cprop);
+					while(!values.isEmpty()){
+						ASTNode n = values.get(0);
+						n.delete();
+						target.add(n);
+					}
+				} else if (cprop.isChildProperty()){
+					ASTNode value = (ASTNode) leftRemoved.getStructuralProperty(cprop);
+					ASTNode vcopy = ASTNode.copySubtree(leftRemoved.getAST(), value);
+					leftRemoved.setStructuralProperty(cprop, vcopy);
+					copy.setStructuralProperty(cprop, value);
+				} else {
+					Object value = leftRemoved.getStructuralProperty(cprop);
+					copy.setStructuralProperty(cprop, value);
+				}
+			}
+		}
 		return copy;
 	}
 	
