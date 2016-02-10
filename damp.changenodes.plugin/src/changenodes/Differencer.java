@@ -102,7 +102,7 @@ public class Differencer implements IDifferencer {
 		for (Iterator<ASTNode> rightBFT = new BreadthFirstNodeIterator(right); rightBFT.hasNext();) {
 			ASTNode current = rightBFT.next();
 			ASTNode parent = current.getParent();
-			if(NodeClassifier.isComment(current) || (parent != null && NodeClassifier.isComment(parent))){
+			if(NodeClassifier.isInsideComment(current)){
 				continue;
 			}
 			if(parent != right.getParent()){ //we are not working on the root
@@ -267,7 +267,6 @@ public class Differencer implements IDifferencer {
 		move = new Move(getOriginal(node), node, newParent, rightNode, prop, position);
 		ASTNode newNode = move.apply(leftMatchingPrime, rightMatchingPrime);
 		addOperation(move);
-		
 	}
 	
 	

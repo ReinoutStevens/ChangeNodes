@@ -45,6 +45,32 @@ public abstract class Operation implements IOperation {
 		}
 	}
 	
+	protected void addMinimalSubtreeMatching(Map<ASTNode, ASTNode> leftMatching, Map<ASTNode, ASTNode> rightMatching, ASTNode left, ASTNode right){
+		if(left == null){
+			return;
+		}
+		if(left.getNodeType() != right.getNodeType()){
+			return;
+		}
+		if(rightMatching.containsKey(right)){
+			//we are re-inserting a node that already had a match
+			ASTNode r = rightMatching.get(right);
+			leftMatching.remove(r);
+		}
+		leftMatching.put(left, right);
+		rightMatching.put(right, left);
+		for (Iterator iterator = left.structuralPropertiesForType().iterator(); iterator.hasNext();) {
+			StructuralPropertyDescriptor prop = (StructuralPropertyDescriptor) iterator.next();
+			if(prop.isChildProperty()){
+				if(((ChildPropertyDescriptor) prop).isMandatory()){
+					ASTNode leftNode = (ASTNode) left.getStructuralProperty(prop);
+					ASTNode rightNode = (ASTNode) right.getStructuralProperty(prop);
+					addMinimalSubtreeMatching(leftMatching, rightMatching, leftNode, rightNode);
+				}
+			}
+		}
+	}
+	
 	
 	protected void minimizeNode(ASTNode node){
 		for (Iterator iterator = node.structuralPropertiesForType().iterator(); iterator.hasNext();) {

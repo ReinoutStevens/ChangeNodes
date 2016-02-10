@@ -13,10 +13,15 @@ public class Delete extends Operation implements IOperation {
 
 	ASTNode leftNode;
 	ASTNode original;
+	ASTNode leftParent = null;
+	
 	int index;
 	
 	public Delete(ASTNode original, ASTNode leftNode){
 		this.leftNode = leftNode;
+		if(leftNode != null){
+			this.leftParent = leftNode.getParent();
+		}
 		this.original = original;
 		this.index = calculateIndex(leftNode);
 	}
@@ -31,6 +36,10 @@ public class Delete extends Operation implements IOperation {
 	
 	public Delete setAffectedNode(ASTNode node){
 		return new Delete(original, node);
+	}
+	
+	public ASTNode getLeftParent() {
+		return leftParent;
 	}
 	
 	public ASTNode apply(Map<ASTNode, ASTNode> leftMatching, Map<ASTNode, ASTNode> rightMatching){

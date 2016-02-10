@@ -17,6 +17,9 @@ public class Move extends Operation implements IOperation {
 	ASTNode leftNode;
 	ASTNode rightNode;
 	ASTNode leftPrimeParent;
+	ASTNode leftRemoved;
+	
+
 	StructuralPropertyDescriptor property;
 	int index;
 	
@@ -28,6 +31,9 @@ public class Move extends Operation implements IOperation {
 		this.index = index;
 		this.rightNode = rightNode;
 		this.leftPrimeParent = node.getParent();
+		if(property.isChildProperty()){
+			this.leftRemoved = (ASTNode) newParent.getStructuralProperty(property);
+		}
 	}
 
 	public ASTNode getOriginal() {
@@ -52,6 +58,10 @@ public class Move extends Operation implements IOperation {
 	
 	public ASTNode getLeftPrimeParent(){
 		return leftPrimeParent;
+	}
+	
+	public ASTNode getLeftRemoved() {
+		return leftRemoved;
 	}
 	
 	public Move setAffectedNode(ASTNode node){
@@ -108,7 +118,7 @@ public class Move extends Operation implements IOperation {
 				leftNode.getParent().setStructuralProperty(prop, copy);
 			}
 		}
-		//shouldnt do anything as node is unparented in step above
+		//shouldnt do anything as node is unparented in step above (except when its a list)
 		leftNode.delete();
 		
 		//move left node

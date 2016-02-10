@@ -70,6 +70,17 @@ public class NodeClassifier {
 		   }
 	   }
 	   
+	   public static boolean isInsideComment(ASTNode node){
+		   //loops parents recursively as JDT AST is weird and likes to add non-comment nodes inside comments
+		   if(node == null){
+			   return false;
+		   }
+		   if(isComment(node)){
+			   return true;
+		   }
+		   return isInsideComment(node.getParent());
+	   }
+	   
 	   public static boolean isRoot(ASTNode node){
 		   return node.getParent() == null;
 	   }

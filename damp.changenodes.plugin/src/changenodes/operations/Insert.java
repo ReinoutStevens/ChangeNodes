@@ -2,6 +2,7 @@ package changenodes.operations;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -96,13 +97,13 @@ public class Insert extends Operation implements IOperation {
 		} else {
 			leftParent.setStructuralProperty(property, copy);
 		}
-		addSubtreeMatching(leftMatching, rightMatching, copy, rightNode);
-		leftMatching.put(copy, rightNode);
-		rightMatching.put(rightNode, copy);
+		//addSubtreeMatching(leftMatching, rightMatching, copy, rightNode);
+		//leftMatching.put(copy, rightNode);
+		//rightMatching.put(rightNode, copy);
 		//}
 		//restore the nodes of leftRemoved, in case they are not needed they will get deleted
 		//cloned from move
-		if(leftRemoved != null){
+		if(leftRemoved != null && copy.getNodeType() == leftRemoved.getNodeType()){
 			for (Iterator iterator = leftRemoved.structuralPropertiesForType().iterator(); iterator.hasNext();) {
 				StructuralPropertyDescriptor cprop = (StructuralPropertyDescriptor) iterator.next();
 				if(cprop.isChildListProperty()){
@@ -118,12 +119,36 @@ public class Insert extends Operation implements IOperation {
 					ASTNode vcopy = ASTNode.copySubtree(leftRemoved.getAST(), value);
 					leftRemoved.setStructuralProperty(cprop, vcopy);
 					copy.setStructuralProperty(cprop, value);
+					
 				} else {
 					Object value = leftRemoved.getStructuralProperty(cprop);
 					copy.setStructuralProperty(cprop, value);
 				}
 			}
+			//Its possible that the minimal representation of the node had a subnode with a matching
+			//Currently, the matching will point to the copied values (vcopy) due to addSubtreeMatching
+			//We need to fix the matching so that it points to the original values.
+			//I guess a rewrite of the code could make this a lot cleaner
+			//Unfortunately, this does not get me a PhD
+			
+			/*for (Iterator iterator = rightNode.structuralPropertiesForType().iterator(); iterator.hasNext();) {
+				StructuralPropertyDescriptor cprop = (StructuralPropertyDescriptor) iterator.next();
+				if(cprop.isChildProperty()){
+					ASTNode value = (ASTNode) rightNode.getStructuralProperty(cprop);
+					ASTNode match = rightMatching.get(value);
+					if(match != null){
+						ASTNode parent = match.getParent();
+						if(parent == null){
+							ASTNode correct = (ASTNode) copy.getStructuralProperty(cprop);
+							addSubtreeMatching(leftMatching, rightMatching, correct, value);
+						}
+					}
+				}
+			}*/
 		}
+		addMinimalSubtreeMatching(leftMatching, rightMatching, copy, rightNode);
+		leftMatching.put(copy, rightNode);
+		rightMatching.put(rightNode, copy);
 		return copy;
 	}
 	

@@ -305,7 +305,7 @@ public class BestLeafTreeMatcher implements IMatcher {
 					if (NodeClassifier.isLeafStatement(y) && x.getNodeType() == y.getNodeType()){
 						double similarity = 0;
 
-                        if (NodeClassifier.isComment(x)) {
+                        if (NodeClassifier.isInsideComment(x)) {
                             //ignore comments as they are not easily available
                         } else { // ...other statements.
                             similarity =
