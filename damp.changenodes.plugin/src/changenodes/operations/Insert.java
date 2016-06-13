@@ -39,6 +39,10 @@ public class Insert extends Operation implements IOperation {
 		}
 	}
 	
+	public boolean isInsert(){
+		return true;
+	}
+	
 	public ASTNode getAffectedNode(){
 		return leftParent;
 	}

@@ -26,6 +26,10 @@ public class Delete extends Operation implements IOperation {
 		this.index = calculateIndex(leftNode);
 	}
 	
+	public boolean isDelete(){
+		return true;
+	}
+	
 	public ASTNode getOriginal() {
 		return original;
 	}

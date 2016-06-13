@@ -96,5 +96,20 @@ public abstract class Operation implements IOperation {
 			} 
 		}
 	}
+	
+	public boolean isMove(){
+		return false;
+	}
 
+	public boolean isDelete(){
+		return false;
+	}
+	
+	public boolean isInsert(){
+		return false;
+	}
+	
+	public boolean isUpdate(){
+		return false;
+	}
 }

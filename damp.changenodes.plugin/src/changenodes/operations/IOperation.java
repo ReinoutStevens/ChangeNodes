@@ -11,4 +11,9 @@ public interface IOperation {
 	public IOperation setAffectedNode(ASTNode node);
 	public ASTNode getAffectedNode();
 	public ASTNode getOriginal();
+	
+	public boolean isDelete();
+	public boolean isInsert();
+	public boolean isMove();
+	public boolean isUpdate();
 }

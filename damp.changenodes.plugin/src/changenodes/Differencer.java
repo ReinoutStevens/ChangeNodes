@@ -258,6 +258,7 @@ public class Differencer implements IDifferencer {
 	}
 
 	public void move(ASTNode node, ASTNode parent, ASTNode newParent, ASTNode rightNode, ASTNode rightParent){
+		
 		int position = -1;
 		StructuralPropertyDescriptor prop = rightNode.getLocationInParent();
 		Move move;
@@ -309,6 +310,11 @@ public class Differencer implements IDifferencer {
 		//these do not have an original node, as they are newly added (and should also be removed as they are 'mandatory')
 		//we apply them but dont output them since they are not needed
 		for(Delete d : deletes){
+			if(d.getOriginal() == null){
+				@SuppressWarnings("unused")
+				int x = 5;
+			}
+				
 			if(d.getOriginal() != null){
 				operations.add(d);
 			}
@@ -317,6 +323,7 @@ public class Differencer implements IDifferencer {
 	
 	
 	//taken from changedistiller
+	//https://rosettacode.org/wiki/Longest_common_subsequence#Java
 	private Map<ASTNode, ASTNode> longestCommonSubsequence(List<ASTNode> lefts, List<ASTNode> rights) {
 		int m = lefts.size();
 		int n = rights.size();

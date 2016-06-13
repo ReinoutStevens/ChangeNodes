@@ -29,6 +29,10 @@ public class Update  extends Operation implements IOperation {
 		this.property = property;
 	}
 
+	public boolean isUpdate(){
+		return true;
+	}
+	
 	public ASTNode getOriginal() {
 		return original;
 	}

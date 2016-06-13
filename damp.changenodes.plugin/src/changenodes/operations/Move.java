@@ -21,7 +21,9 @@ public class Move extends Operation implements IOperation {
 	
 
 	StructuralPropertyDescriptor property;
+	StructuralPropertyDescriptor primeProperty;
 	int index;
+	int primeIndex = -1;
 	
 	public Move(ASTNode original, ASTNode node, ASTNode newParent, ASTNode rightNode, StructuralPropertyDescriptor property, int index){
 		this.original = original;
@@ -31,9 +33,18 @@ public class Move extends Operation implements IOperation {
 		this.index = index;
 		this.rightNode = rightNode;
 		this.leftPrimeParent = node.getParent();
+		this.primeProperty = node.getLocationInParent();
 		if(property.isChildProperty()){
 			this.leftRemoved = (ASTNode) newParent.getStructuralProperty(property);
 		}
+		if(primeProperty != null && primeProperty.isChildListProperty()){
+			List<ASTNode> nodes = (List<ASTNode>) leftPrimeParent.getStructuralProperty(primeProperty);
+			this.primeIndex = nodes.indexOf(node);
+		}
+	}
+	
+	public boolean isMove(){
+		return true;
 	}
 
 	public ASTNode getOriginal() {
@@ -71,9 +82,17 @@ public class Move extends Operation implements IOperation {
 	public StructuralPropertyDescriptor getProperty() {
 		return property;
 	}
+	
+	public StructuralPropertyDescriptor getPrimeProperty() {
+		return primeProperty;
+	}
 
 	public int getIndex() {
 		return index;
+	}
+	
+	public int getPrimeIndex() {
+		return primeIndex;
 	}
 	
 	public ASTNode apply(Map<ASTNode, ASTNode> leftMatching, Map<ASTNode, ASTNode> rightMatching){
